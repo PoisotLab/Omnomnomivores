@@ -14,14 +14,42 @@ h = 300 # scaling param
 σ = 50 # std dev relating to env effect
 X[1,1] = 10 # abundance of spp in patch
 
+# create matrix with species metadata
+# for now only an id and trophic level
+
+Sm = [1:S rand(1:3,S)]
+# ❗ TODO trophic level can be more representative of real world ratios
+
 # Per capita effect (rules)
 
-## drawn from nor
+# interaction matrix
+B = zeros(Float64, S, S)
 
+Random.seed!(66) # Setting the seed
 
-Random.seed!(123) # Setting the seed
-d = Normal(μ=0.16, σ=0.05)
-n=rand(d,1000)
+plant_plant = Uniform(-0.1, 0.0)
+herb_plant = Uniform(-0.3, 0.0)
+plant_herb = Uniform(0.0, 0.1)
+pred_herb = Uniform(-0.1, 0.0)
+herb_pred = Uniform(0.0, 0.08)
+
+# determine 'interaction strength'
+for i in 1:S-1
+    j = i+1
+    if (Sm[i,2] == 1 && Sm[j,2] == 1)
+        B[i,j] = rand(plant_plant,1)[1]
+    elseif(Sm[i,2] == 2 && Sm[j,2] == 1)
+        B[i,j] = rand(herb_plant,1)[1]
+    elseif(Sm[i,2] == 1 && Sm[j,2] == 2)
+        B[i,j] = rand(plant_herb,1)[1]
+    elseif(Sm[i,2] == 3 && Sm[j,2] == 2)
+        B[i,j] = rand(pred_herb,1)[1]
+    elseif(Sm[i,2] == 2 && Sm[j,2] == 3)
+        B[i,j] = rand(herb_pred,1)[1]
+    else
+        B[i,j] = 0.0
+    end 
+end
 
 
 
