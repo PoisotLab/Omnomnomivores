@@ -14,19 +14,19 @@ X = Array{Any}(undef, t)
 
 ## Parameters
 
-# ❗ TODO this is a uniform, linear landscape with the same 'E' value will vary later
-M = fill(0, (5, t))
+# ❗ TODO this is a uniform, linear landscape with the same 'E' value, will vary later
+M = fill(0, (5))
 S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-X[1] = fill(10, (S, S)) # abundance of spp in patch at t = 1 (there is value in zero indexing and I hate that Phil is right...)
+X[1] = fill(10, (S)) # abundance of spp in patch at t = 1 (there is value in zero indexing and I hate that Phil is right...)
 
 # Species metadata
-# for now only an id and trophic level
+# for now only an id, trophic level, env optima (set to zero for now)
 
 # ❗ TODO trophic level can be more representative of real world ratios
-Sm = [1:S rand(1:3,S)]
+Sm = [1:S rand(1:3,S,0)]
 
 ## Per capita effect (rules)
 
@@ -60,10 +60,18 @@ for i in 1:S-1
     end 
 end
 
+## Environmental optima
+
+# normal distribution equally distributed across trophic levels
+
+# use the max and min env variables from M to get range
+# Neutral Landscapes means  range is 0 - 1.0
+# for each trophic level (1-3) divide range by number species per level (n) and assign to spp
+# collect(range(0, 1, length = n))
+# ❗ might want to create a env _range_ centered around the optima - need to think about the σ of these though
 
 
-
-# e.g. 'sketch'
+## e.g. 'sketch'
 
 ΔN(Nt,Pt) = λ*Nt*exp((1-Nt/K)-a*Pt)
 ΔP(Nt,Pt) = n*Nt*(1-exp(-a*Pt))
