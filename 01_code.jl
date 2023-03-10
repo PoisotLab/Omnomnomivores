@@ -1,31 +1,39 @@
-# packages here
+## packages here
 using Distributions
 using NeutralLandscapes
 using Plots
 using Random
 
+## Assets to store things to
 
-# parameters (using Thompson for now)
+# number of timestamps
+t = 5
 
-M = 200 # number of patches
-S = 80 # number of species
+# create the matrices for abundance
+X = Array{Any}(undef, t)
+
+## Parameters
+
+# ❗ TODO this is a uniform, linear landscape with the same 'E' value will vary later
+M = fill(0, (5, t))
+S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-X[1,1] = 10 # abundance of spp in patch
+X[1] = fill(10, (S, S)) # abundance of spp in patch at t = 1 (there is value in zero indexing and I hate that Phil is right...)
 
-# create matrix with species metadata
+# Species metadata
 # for now only an id and trophic level
 
-Sm = [1:S rand(1:3,S)]
 # ❗ TODO trophic level can be more representative of real world ratios
+Sm = [1:S rand(1:3,S)]
 
-# Per capita effect (rules)
+## Per capita effect (rules)
 
-# interaction matrix
+# empty interaction matrix
 B = zeros(Float64, S, S)
 
-Random.seed!(66) # Setting the seed
+Random.seed!(66) #Setting the seed
 
 plant_plant = Uniform(-0.1, 0.0)
 herb_plant = Uniform(-0.3, 0.0)
@@ -34,6 +42,7 @@ pred_herb = Uniform(-0.1, 0.0)
 herb_pred = Uniform(0.0, 0.08)
 
 # determine 'interaction strength'
+# ❗ TODO actually populate the entire (1/2) matrix (bonus make matrix sparse)
 for i in 1:S-1
     j = i+1
     if (Sm[i,2] == 1 && Sm[j,2] == 1)
@@ -52,6 +61,9 @@ for i in 1:S-1
 end
 
 
+
+
+# e.g. 'sketch'
 
 ΔN(Nt,Pt) = λ*Nt*exp((1-Nt/K)-a*Pt)
 ΔP(Nt,Pt) = n*Nt*(1-exp(-a*Pt))
