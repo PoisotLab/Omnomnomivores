@@ -1,26 +1,27 @@
 ## packages here
 using Distributions
 using NeutralLandscapes
+using OffsetArrays #(at least at some point we'll be brave and try 0 indexing)
 using Plots
+using SpatialBoundaries
 using Random
-
-## Assets to store things to
-
-# number of timestamps
-t = 5
 
 # create the matrices for abundance
 X = Array{Any}(undef, t)
 
 ## Parameters
 
-# ❗ TODO this is a uniform, linear landscape with the same 'E' value, will vary later
-M = fill(0, (5))
+t = 5 # number of timestamps
+M = 10 # number of habitat patches (uniform for now)
 S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-X[1] = fill(10, (S)) # abundance of spp in patch at t = 1 (there is value in zero indexing and I hate that Phil is right...)
+X[1] = fill(10, (S)) # abundance of spp in patch at t = 1 (make 0 indexed)
+
+# _THE_ ArrayTM
+
+A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
 
 # Species metadata
 # for now only an id, trophic level, env optima (set to zero for now)
