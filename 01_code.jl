@@ -6,8 +6,6 @@ using Plots
 using SpatialBoundaries
 using Random
 
-# create the matrices for abundance
-X = Array{Any}(undef, t)
 
 ## Parameters
 
@@ -17,17 +15,22 @@ S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-X[1] = fill(10, (S)) # abundance of spp in patch at t = 1 (make 0 indexed)
 
 # _THE_ ArrayTM
 
-A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
+# we'll get back to this
+# the idea though? - a M x S x t miltidim array
+#A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
+
+# timestamp 1
+A = [repeat([1], M) 1:M repeat([1], M) fill(10, (M, S))]
+# ❗ re-index to -2? (guessing there is a zero...)
 
 # Species metadata
 # for now only an id, trophic level, env optima (set to zero for now)
 
 # ❗ TODO trophic level can be more representative of real world ratios
-Sm = [1:S rand(1:3,S,0)]
+Sm = [1:S rand(1:3,S)]
 
 ## Per capita effect (rules)
 
@@ -43,7 +46,7 @@ pred_herb = Uniform(-0.1, 0.0)
 herb_pred = Uniform(0.0, 0.08)
 
 # determine 'interaction strength'
-# ❗ TODO actually populate the entire (1/2) matrix (bonus make matrix sparse)
+# ❗ I think this could be a 'wide table' that appends to species metadata
 for i in 1:S-1
     j = i+1
     if (Sm[i,2] == 1 && Sm[j,2] == 1)
