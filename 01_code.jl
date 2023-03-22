@@ -81,7 +81,7 @@ A1 = copy(A)
 
 for i in 1:S
     
-    A[1, i+3]^(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h^(-((A[j,3]-Sm[i,3])^2/2σ^2))))
+    A[1, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))
 
 end
 
