@@ -10,7 +10,7 @@ using Random
 ## Parameters
 
 t = 5 # number of timestamps
-M = 10 # number of habitat patches (uniform for now)
+M = 10.0 # number of habitat patches (uniform for now)
 S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
@@ -23,7 +23,7 @@ h = 300 # scaling param
 #A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
 
 # timestamp 1
-A = [repeat([1], M) 1:M repeat([0], M) fill(10, (M, S))]
+A = [repeat([1.0], M) 1.0:M repeat([0.0], M) fill(10.0, (M, S))]
 # ❗ re-index to -2? (guessing there is a zero...)
 
 # Species metadata
@@ -79,10 +79,10 @@ end
 
 A1 = copy(A)
 
-for i in 1:S
-    
-    A[1, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))
-
+for j in 1:M
+    for i in 1:S
+    A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))
+    end
 end
 
 ## e.g. 'sketch'
