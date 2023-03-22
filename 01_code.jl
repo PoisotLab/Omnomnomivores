@@ -23,21 +23,21 @@ h = 300 # scaling param
 #A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
 
 # timestamp 1
-A = [repeat([1], M) 1:M repeat([1], M) fill(10, (M, S))]
+A = [repeat([1], M) 1:M repeat([0], M) fill(10, (M, S))]
 # ❗ re-index to -2? (guessing there is a zero...)
 
 # Species metadata
 # for now only an id, trophic level, env optima (set to zero for now)
 
 # ❗ TODO trophic level can be more representative of real world ratios
-Sm = [1:S rand(1:3,S)]
+Sm = [1:S rand(1:3,S) repeat([0], S)]
 
 ## Per capita effect (rules)
 
 # empty interaction matrix
 B = zeros(Float64, S, S)
 
-Random.seed!(66) #Setting the seed
+Random.seed!(66) # Execute order 66
 
 plant_plant = Uniform(-0.1, 0.0)
 herb_plant = Uniform(-0.3, 0.0)
@@ -46,7 +46,7 @@ pred_herb = Uniform(-0.1, 0.0)
 herb_pred = Uniform(0.0, 0.08)
 
 # determine 'interaction strength'
-# ❗ I think this could be a 'wide table' that appends to species metadata
+# ❗ I think this could be a 'wide table' that appends to species metadata but also maybe not...
 for i in 1:S-1
     j = i+1
     if (Sm[i,2] == 1 && Sm[j,2] == 1)
@@ -67,6 +67,7 @@ end
 ## Environmental optima
 
 # normal distribution equally distributed across trophic levels
+# setting to 0 for now in Sm
 
 # use the max and min env variables from M to get range
 # Neutral Landscapes means  range is 0 - 1.0
@@ -74,6 +75,15 @@ end
 # collect(range(0, 1, length = n))
 # ❗ might want to create a env _range_ centered around the optima - need to think about the σ of these though
 
+## Waves hand and things happen (but only for one timestamp)
+
+A1 = copy(A)
+
+for i in 1:S
+    
+    A[1, i+3]^(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h^(-((A[j,3]-Sm[i,3])^2/2σ^2))))
+
+end
 
 ## e.g. 'sketch'
 
