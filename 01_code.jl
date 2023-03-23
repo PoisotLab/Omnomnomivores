@@ -15,6 +15,8 @@ S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
+μa = 2.5
+σa = μa*0.25
 
 # _THE_ ArrayTM
 
@@ -79,9 +81,10 @@ end
 
 A1 = copy(A)
 
-for j in 1:M
-    for i in 1:S
-        A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))
+for i in 1:S
+    a = rand(Normal(μa, σa))[1]
+    for j in 1:M
+        A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))-A[j, i+3]a
     end
 end
 
