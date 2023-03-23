@@ -15,8 +15,8 @@ S = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-μa = 2.5
-σa = μa*0.25
+μa = 2.5 # mean dispersal rate
+σa = μa*0.25 # std dev of dispersal rate
 
 # _THE_ ArrayTM
 
