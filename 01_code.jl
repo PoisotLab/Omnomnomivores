@@ -11,36 +11,62 @@ using Random
 
 t = 5 # number of timestamps
 M = 10.0 # number of habitat patches (uniform for now)
-S = 8 # number of species
+_landscape_size = (20, 20)
+_species_richness = 8 # number of species
 Ci = 0.05 # rate of increase
 h = 300 # scaling param
 σ = 50 # std dev relating to env effect
-μa = 2.5 # mean dispersal rate
-σa = μa*0.25 # std dev of dispersal rate
+μa = 0.25 # mean dispersal rate
+σa = μa*0.62 # std dev of dispersal rate
 
 # _THE_ ArrayTM
 
-# we'll get back to this
-# the idea though? - a M x S x t miltidim array
-#A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
-
 # timestamp 1
 A = [repeat(1.0:2.0, inner = 5) repeat(1.0:5.0, outer = 2) repeat([0.0], M) fill(10.0, (M, S))]
-# ❗ re-index to -2? (guessing there is a zero...)
 
-# Species metadata
-# for now only an id, trophic level, env optima (set to zero for now)
 
-# ❗ TODO trophic level can be more representative of real world ratios
-Sm = [1:S rand(1:3,S) fill(0.0, (S, 2))]
 
-## Per capita effect (rules)
+current_community = zeros(
+    Float64,
+    (
+        _landscape_size...,
+        _species_richness
+    )
+)
 
-# empty interaction matrix
-B = zeros(Float64, S, S)
+interaction_strength = zeros(Float64, (_species_richness, _species_richness))
+trophic_level = zeros(Int8, _species_richness)
+environmental_optimum = zeros(Float64, _species_richness)
+dispersal_decay = zeros(Float64, _species_richness)
 
-Random.seed!(66) # Execute order 66
+function set_trophic_levels!(trophic_level::Vector{Int8}; plants::Float64=0.5, herbivores::Float64=0.3, carnivores::Float64=0.2)
+    _p, _h, _ = [plants, herbivores, carnivores] ./ (plants + herbivores + carnivores)
+    n_plants = ceil(Int, length(trophic_level)*_p)
+    n_herbivores = ceil(Int, length(trophic_level)*_h)
+    n_carnivores = length(trophic_level) - (n_plants + n_herbivores)
+    trophic_level[1:n_plants] .= Int8(1)
+    trophic_level[(n_plants+1):(n_plants+n_herbivores)] .= Int8(2)
+    trophic_level[(end-n_carnivores):end] .= Int8(3)
+    return trophic_level
+end
 
+function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
+    p = [(0.3, 0.3/4), (0.2, 0.2/4), (0.1, 0.1/4)]
+    for s in axes(trophic_level, 1)
+        dispersal_decay[s] = rand(Normal(p[trophic_level[s]]...))
+    end
+    return dispersal_decay
+end
+
+patch_position =  CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
+D = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
+for i in axes(patch_position, 1)
+    for j in axes(patch_position, 2)
+        D[i,j] = sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)).^2.0))
+    end
+end
+
+# Tanya will try interaction strength (and cry a little bit while doing it)
 plant_plant = Uniform(-0.1, 0.0)
 herb_plant = Uniform(-0.3, 0.0)
 plant_herb = Uniform(0.0, 0.1)
@@ -48,7 +74,6 @@ pred_herb = Uniform(-0.1, 0.0)
 herb_pred = Uniform(0.0, 0.08)
 
 # determine 'interaction strength'
-# ❗ I think this could be a 'wide table' that appends to species metadata but also maybe not...
 for i in 1:S
     for j in 1:S
         if (Sm[i,2] == 1 && Sm[j,2] == 1)
@@ -67,6 +92,11 @@ for i in 1:S
     end
 end
 
+_next_community = similar(current_community)
+
+Random.seed!(66) # Execute order 66
+
+
 ## Environmental optima
 
 # normal distribution equally distributed across trophic levels
@@ -78,59 +108,23 @@ end
 # collect(range(0, 1, length = n))
 # ❗ might want to create a env _range_ centered around the optima - need to think about the σ of these though
 
-## Dispersal Distance Decay 
-# we'll add this to Sm
-
-for i in 1:S
-    if (Sm[i,2] == 1)
-        Sm[i,4] = rand(Normal(0.3, 0.3*0.25))[1]
-    elseif(Sm[i,2] == 2)
-        Sm[i,4] = rand(Normal(0.2, 0.2*0.25))[1]
-    else
-        Sm[i,4] = rand(Normal(0.1, 0.1*0.25))[1]
-    end 
-end
 
 ## Waves hand and things happen (but only for one timestamp)
+
+function whaveter!(next, current; )
+end
+
+# function _Immigration
+# function _Environmental_effect
 
 A1 = copy(A)
 
 for i in 1:S
     a = rand(Normal(μa, σa))[1]
     for j in 1:M
+        # growth = ...
+        # trophic = ...
+        # dispersal = ...
         A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))+sum(a*A[l, i+3]^(-Sm[i,4]*sqrt((A[j,1]-A[l,1])^2+(A[j,2]-A[l,2])^2)) for l in 1:M)-A[j, i+3]a
     end
 end
-
-## e.g. 'sketch'
-
-ΔN(Nt,Pt) = λ*Nt*exp((1-Nt/K)-a*Pt)
-ΔP(Nt,Pt) = n*Nt*(1-exp(-a*Pt))
-
-ΔN(Nt, Pt)
-ΔP(Nt, Pt)
-
-t = 9e2
-
-P = zeros(t)
-N = zeros(t)
-N[1] = 25.0
-P[1] = 10.0
-
-for i in 2:length(P)
-    j = i-1
-    N[i] = ΔN(N[j], P[j])
-    P[i] = ΔP(N[j], P[j])
-end
-
-p1 = plot(eachindex(N), N, lab="Host", c=:black)
-plot!(p1, eachindex(P), P, lab="Parasitoid", c=:red)
-xaxis!(p1, "Time")
-yaxis!(p1, "Abundances")
-
-p2 = plot(N, P, leg=false, c=:grey)
-scatter!(p2, [N[1]], [P[1]], c=:black)
-xaxis!(p2, (0, maximum(N)), "Host")
-yaxis!(p2, (0, maximum(P)), "Parasitoid")
-
-plot(p1, p2)
