@@ -49,21 +49,22 @@ herb_pred = Uniform(0.0, 0.08)
 
 # determine 'interaction strength'
 # ❗ I think this could be a 'wide table' that appends to species metadata but also maybe not...
-for i in 1:S-1
-    j = i+1
-    if (Sm[i,2] == 1 && Sm[j,2] == 1)
-        B[i,j] = rand(plant_plant,1)[1]/0.33*S
-    elseif(Sm[i,2] == 2 && Sm[j,2] == 1)
-        B[i,j] = rand(herb_plant,1)[1]/0.33*S
-    elseif(Sm[i,2] == 1 && Sm[j,2] == 2)
-        B[i,j] = rand(plant_herb,1)[1]/0.33*S
-    elseif(Sm[i,2] == 3 && Sm[j,2] == 2)
-        B[i,j] = rand(pred_herb,1)[1]/0.33*S
-    elseif(Sm[i,2] == 2 && Sm[j,2] == 3)
-        B[i,j] = rand(herb_pred,1)[1]/0.33*S
-    else
-        B[i,j] = 0.0
-    end 
+for i in 1:S
+    for j in 1:S
+        if (Sm[i,2] == 1 && Sm[j,2] == 1)
+            B[i,j] = rand(plant_plant,1)[1]/0.33*S
+        elseif(Sm[i,2] == 2 && Sm[j,2] == 1)
+            B[i,j] = rand(herb_plant,1)[1]/0.33*S
+        elseif(Sm[i,2] == 1 && Sm[j,2] == 2)
+            B[i,j] = rand(plant_herb,1)[1]/0.33*S
+        elseif(Sm[i,2] == 3 && Sm[j,2] == 2)
+            B[i,j] = rand(pred_herb,1)[1]/0.33*S
+        elseif(Sm[i,2] == 2 && Sm[j,2] == 3)
+            B[i,j] = rand(herb_pred,1)[1]/0.33*S
+        else
+            B[i,j] = 0.0
+        end 
+    end
 end
 
 ## Environmental optima
