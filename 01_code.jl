@@ -25,14 +25,14 @@ h = 300 # scaling param
 #A = [x + y + z  for x in 1:M, y ∈ 1:S+3, z = 1:t+1]
 
 # timestamp 1
-A = [repeat([1.0], M) 1.0:M repeat([0.0], M) fill(10.0, (M, S))]
+A = [repeat(1.0:2.0, inner = 5) repeat(1.0:5.0, outer = 2) repeat([0.0], M) fill(10.0, (M, S))]
 # ❗ re-index to -2? (guessing there is a zero...)
 
 # Species metadata
 # for now only an id, trophic level, env optima (set to zero for now)
 
 # ❗ TODO trophic level can be more representative of real world ratios
-Sm = [1:S rand(1:3,S) repeat([0], S)]
+Sm = [1:S rand(1:3,S) fill(0.0, (S, 2))]
 
 ## Per capita effect (rules)
 
@@ -78,6 +78,19 @@ end
 # collect(range(0, 1, length = n))
 # ❗ might want to create a env _range_ centered around the optima - need to think about the σ of these though
 
+## Dispersal Distance Decay 
+# we'll add this to Sm
+
+for i in 1:S
+    if (Sm[i,2] == 1)
+        Sm[i,4] = rand(Normal(0.3, 0.3*0.25))[1]
+    elseif(Sm[i,2] == 2)
+        Sm[i,4] = rand(Normal(0.2, 0.2*0.25))[1]
+    else
+        Sm[i,4] = rand(Normal(0.1, 0.1*0.25))[1]
+    end 
+end
+
 ## Waves hand and things happen (but only for one timestamp)
 
 A1 = copy(A)
@@ -85,7 +98,7 @@ A1 = copy(A)
 for i in 1:S
     a = rand(Normal(μa, σa))[1]
     for j in 1:M
-        A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))-A[j, i+3]a
+        A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))+sum(a*A[l, i+3]^(-Sm[i,4]*sqrt((A[j,1]-A[l,1])^2+(A[j,2]-A[l,2])^2)) for l in 1:M)-A[j, i+3]a
     end
 end
 
