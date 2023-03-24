@@ -34,6 +34,7 @@ interaction_strength = zeros(Float64, (_species_richness, _species_richness))
 trophic_level = zeros(Int8, _species_richness)
 environmental_optimum = zeros(Float64, _species_richness)
 dispersal_decay = zeros(Float64, _species_richness)
+dispersal_rate = zeros(Float64, _species_richness)
 
 function set_trophic_levels!(trophic_level::Vector{Int8}; plants::Float64=0.5, herbivores::Float64=0.3, carnivores::Float64=0.2)
     _p, _h, _ = [plants, herbivores, carnivores] ./ (plants + herbivores + carnivores)
@@ -87,6 +88,13 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
     return interaction_strength
 end
 
+function set_dispersal_rate!(dispersal_rate::Vector{Float64}; mean_dispersal_rate::Float64=0.25)
+    for s in axes(trophic_level, 1)
+        dispersal_rate[s] = rand(Normal((mean_dispersal_rate, mean_dispersal_rate/4)...))
+    end
+    return dispersal_rate
+end
+
 _next_community = similar(current_community)
 
 Random.seed!(66) # Execute order 66
@@ -115,7 +123,7 @@ end
 A1 = copy(A)
 
 for i in 1:S
-    a = rand(Normal(μa, σa))[1]
+    a = rand(Normal(μa, σa))
     for j in 1:M
         # growth = ...
         # trophic = ...
