@@ -103,7 +103,9 @@ end
 
 function _immigration(current_community, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64})
     for i in axes(current_community, 3)
-        sum(dispersal_rate[i]*current_community[])
+        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working today
+            sum(dispersal_rate[i]*current_community[j,l,i]*exp(-dispersal_decay[i]*patch_distance[j,l]) for l in axes(patch_distance))  
+        end
     end
 end
 
@@ -116,8 +118,8 @@ function _interaction_effect(patch_location, species_id, current_community, inte
 end
 
 function metacommunity_model(stuff...)
-    for i in 1:axes(current_community, 3)
-        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working todya
+    for i in axes(current_community, 3)
+        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working today
             current_abundance = current_community[patch_location[j], patch_location[j], i]
             environment = _environmental_effect()
             immigration = _immigration()
