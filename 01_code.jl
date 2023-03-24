@@ -118,9 +118,12 @@ end
 function metacommunity_model(stuff...)
     for i in 1:axes(current_community, 3)
         for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working todya
+            current_abundance = current_community[patch_location[j], patch_location[j], i]
             environment = _environmental_effect()
             immigration = _immigration()
             interaction = _interaction_effect()
+            emmigration = current_abundance*dispersal_rate[i]
+            abundance_new = current_abundance*exp(interaction + environment) + immigration - emmigration
         end
     end
 end
