@@ -21,10 +21,6 @@ h = 300 # scaling param
 
 # _THE_ ArrayTM
 
-# timestamp 1
-A = [repeat(1.0:2.0, inner = 5) repeat(1.0:5.0, outer = 2) repeat([0.0], M) fill(10.0, (M, S))]
-
-
 
 current_community = zeros(
     Float64,
@@ -66,30 +62,29 @@ for i in axes(patch_position, 1)
     end
 end
 
-# Tanya will try interaction strength (and cry a little bit while doing it)
-plant_plant = Uniform(-0.1, 0.0)
-herb_plant = Uniform(-0.3, 0.0)
-plant_herb = Uniform(0.0, 0.1)
-pred_herb = Uniform(-0.1, 0.0)
-herb_pred = Uniform(0.0, 0.08)
-
-# determine 'interaction strength'
-for i in 1:S
-    for j in 1:S
-        if (Sm[i,2] == 1 && Sm[j,2] == 1)
-            B[i,j] = rand(plant_plant,1)[1]/0.33*S
-        elseif(Sm[i,2] == 2 && Sm[j,2] == 1)
-            B[i,j] = rand(herb_plant,1)[1]/0.33*S
-        elseif(Sm[i,2] == 1 && Sm[j,2] == 2)
-            B[i,j] = rand(plant_herb,1)[1]/0.33*S
-        elseif(Sm[i,2] == 3 && Sm[j,2] == 2)
-            B[i,j] = rand(pred_herb,1)[1]/0.33*S
-        elseif(Sm[i,2] == 2 && Sm[j,2] == 3)
-            B[i,j] = rand(herb_pred,1)[1]/0.33*S
-        else
-            B[i,j] = 0.0
-        end 
-    end
+function set_interaction_strength!(interaction_strength::Vector{Float64}; trophic_level)
+    plant_plant = Uniform(-0.1, 0.0)
+    herb_plant = Uniform(-0.3, 0.0)
+    plant_herb = Uniform(0.0, 0.1)
+    pred_herb = Uniform(-0.1, 0.0)
+    herb_pred = Uniform(0.0, 0.08)
+    for i in axes(interaction_strength, 1)
+        for j in axes(interaction_strength, 2)
+            if (trophic_level[i] == 1 && trophic_level[j] == 1)
+                interaction_strength[i,j] = rand(plant_plant,1)/0.33*length(trophic_level)
+            elseif(trophic_level[i] == 2 && trophic_level[j] == 1)
+                interaction_strength[i,j] = rand(herb_plant,1)/0.33*length(trophic_level)
+            elseif(trophic_level[i] == 1 && trophic_level[j] == 2)
+                interaction_strength[i,j] = rand(plant_herb,1)/0.33*length(trophic_level)
+            elseif(trophic_level[i] == 3 && trophic_level[j] == 2)
+                interaction_strength[i,j] = rand(pred_herb,1)/0.33*length(trophic_level)
+            elseif(trophic_level[i] == 2 && trophic_level[j] == 3)
+                interaction_strength[i,j] = rand(herb_pred,1)/0.33*length(trophic_level)
+            else
+                interaction_strength[i,j] = 0.0
+            end 
+        end
+    return interaction_strength
 end
 
 _next_community = similar(current_community)
