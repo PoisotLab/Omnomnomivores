@@ -106,7 +106,8 @@ function _immigration(current_community, dispersal_rate::Vector{Float64}, disper
     end
 end
 
-function _environmental_effect(next, current; )
+function _environmental_effect(patch_location, species_id, environment_value::Vector{Float64}, environmental_optimum::Vector{Float64}; h=300; σ=50)
+    return h-[h*exp(-(environment_value[patch_location]-environmental_optimum[species_id])^2/(2σ^2))]
 end
 
 A1 = copy(A)
