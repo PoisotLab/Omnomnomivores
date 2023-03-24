@@ -62,7 +62,7 @@ for i in axes(patch_position, 1)
     end
 end
 
-function set_interaction_strength!(interaction_strength::Vector{Float64}; trophic_level)
+function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
     plant_plant = Uniform(-0.1, 0.0)
     herb_plant = Uniform(-0.3, 0.0)
     plant_herb = Uniform(0.0, 0.1)
