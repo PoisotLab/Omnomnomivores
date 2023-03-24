@@ -56,12 +56,14 @@ function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
 end
 
 patch_position =  CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
-D = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
+patch_distance = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
 for i in axes(patch_position, 1)
     for j in axes(patch_position, 2)
-        D[i,j] = sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)).^2.0))
+        patch_distance[i,j] = sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)).^2.0))
     end
 end
+
+environment_value = zeros(Float64, prod(_landscape_size)) #❗
 
 function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
     plant_plant = Uniform(-0.1, 0.0)
@@ -95,30 +97,17 @@ function set_dispersal_rate!(dispersal_rate::Vector{Float64}; mean_dispersal_rat
     return dispersal_rate
 end
 
-_next_community = similar(current_community)
-
-Random.seed!(66) # Execute order 66
+## Environmental optima ❗
 
 
-## Environmental optima
-
-# normal distribution equally distributed across trophic levels
-# setting to 0 for now in Sm
-
-# use the max and min env variables from M to get range
-# Neutral Landscapes means  range is 0 - 1.0
-# for each trophic level (1-3) divide range by number species per level (n) and assign to spp
-# collect(range(0, 1, length = n))
-# ❗ might want to create a env _range_ centered around the optima - need to think about the σ of these though
-
-
-## Waves hand and things happen (but only for one timestamp)
-
-function whaveter!(next, current; )
+function _immigration(current_community, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64})
+    for i in axes(current_community, 3)
+        sum(dispersal_rate[i]*current_community[])
+    end
 end
 
-# function _Immigration
-# function _Environmental_effect
+function _environmental_effect(next, current; )
+end
 
 A1 = copy(A)
 
@@ -131,3 +120,5 @@ for i in 1:S
         A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))+sum(a*A[l, i+3]^(-Sm[i,4]*sqrt((A[j,1]-A[l,1])^2+(A[j,2]-A[l,2])^2)) for l in 1:M)-A[j, i+3]a
     end
 end
+
+_next_community = similar(current_community)
