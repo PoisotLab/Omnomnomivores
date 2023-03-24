@@ -88,6 +88,7 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
             end 
         end
     return interaction_strength
+    end
 end
 
 function set_dispersal_rate!(dispersal_rate::Vector{Float64}; mean_dispersal_rate::Float64=0.25)
@@ -106,8 +107,22 @@ function _immigration(current_community, dispersal_rate::Vector{Float64}, disper
     end
 end
 
-function _environmental_effect(patch_location, species_id, environment_value::Vector{Float64}, environmental_optimum::Vector{Float64}; h=300; σ=50)
+function _environmental_effect(patch_location, species_id, environment_value::Vector{Float64}, environmental_optimum::Vector{Float64}; h=300, σ=50)
     return h-[h*exp(-(environment_value[patch_location]-environmental_optimum[species_id])^2/(2σ^2))]
+end
+
+function _interaction_effect(patch_location, species_id, current_community, interaction_strength)
+    sum(interaction_strength[species_id,n]*current_community[patch_location[1], patch_location[2], n] for n in axes(current_community, 3))
+end
+
+function metacommunity_model(stuff...)
+    for i in 1:axes(current_community, 3)
+        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working todya
+            environment = _environmental_effect()
+            immigration = _immigration()
+            interaction = _interaction_effect()
+        end
+    end
 end
 
 A1 = copy(A)
