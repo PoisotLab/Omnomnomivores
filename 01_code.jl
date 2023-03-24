@@ -128,16 +128,4 @@ function metacommunity_model(stuff...)
     end
 end
 
-A1 = copy(A)
-
-for i in 1:S
-    a = rand(Normal(μa, σa))
-    for j in 1:M
-        # growth = ...
-        # trophic = ...
-        # dispersal = ...
-        A1[j, i+3] = A[j, i+3]exp(Ci+sum(B[i,n]*A[1, n+3] for n in 1:S)+(h-h*exp(-((A[j,3]-Sm[i,3])^2/2σ^2))))+sum(a*A[l, i+3]^(-Sm[i,4]*sqrt((A[j,1]-A[l,1])^2+(A[j,2]-A[l,2])^2)) for l in 1:M)-A[j, i+3]a
-    end
-end
-
 _next_community = similar(current_community)
