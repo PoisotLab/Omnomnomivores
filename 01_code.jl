@@ -67,23 +67,22 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
     plant_herb = Uniform(0.0, 0.1)
     pred_herb = Uniform(-0.1, 0.0)
     herb_pred = Uniform(0.0, 0.08)
-    for i in axes(interaction_strength, 1)
+    for i in axes(interaction_strength, 2)
         for j in axes(interaction_strength, 2)
             if (trophic_level[i] == 1 && trophic_level[j] == 1)
-                interaction_strength[i,j] = rand(plant_plant,1)/0.33*length(trophic_level)
+                interaction_strength[i,j] = rand(plant_plant,1)[1]/0.33*length(trophic_level)
             elseif(trophic_level[i] == 2 && trophic_level[j] == 1)
-                interaction_strength[i,j] = rand(herb_plant,1)/0.33*length(trophic_level)
+                interaction_strength[i,j] = rand(herb_plant,1)[1]/0.33*length(trophic_level)
             elseif(trophic_level[i] == 1 && trophic_level[j] == 2)
-                interaction_strength[i,j] = rand(plant_herb,1)/0.33*length(trophic_level)
+                interaction_strength[i,j] = rand(plant_herb,1)[1]/0.33*length(trophic_level)
             elseif(trophic_level[i] == 3 && trophic_level[j] == 2)
-                interaction_strength[i,j] = rand(pred_herb,1)/0.33*length(trophic_level)
+                interaction_strength[i,j] = rand(pred_herb,1)[1]/0.33*length(trophic_level)
             elseif(trophic_level[i] == 2 && trophic_level[j] == 3)
-                interaction_strength[i,j] = rand(herb_pred,1)/0.33*length(trophic_level)
+                interaction_strength[i,j] = rand(herb_pred,1)[1]/0.33*length(trophic_level)
             else
                 interaction_strength[i,j] = 0.0
-            end 
+            end
         end
-    return interaction_strength
     end
 end
 
@@ -125,5 +124,12 @@ function metacommunity_model(stuff...; rate_of_increase::Float64=0.05)
         end
     end
 end
+
+set_trophic_levels!(trophic_level)
+set_interaction_strength!(interaction_strength; trophic_level)
+set_environmental_optimum!(environmental_optimum)
+set_dispersal_rate!(dispersal_rate)
+set_dispersal_decay!(dispersal_decay; trophic_level)
+
 
 _next_community = similar(current_community)
