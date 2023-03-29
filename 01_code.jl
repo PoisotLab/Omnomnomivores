@@ -96,12 +96,11 @@ end
 ## Environmental optima ❗
 
 
-function _immigration(current_community, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64})
-    for i in axes(current_community, 3)
-        for j in 1:prod(_landscape_size) #❗ I know this is for a linear arrangement of habitat patches but thats how my brain is working today
-            sum(dispersal_rate[i]*current_community[j,l,i]*exp(-dispersal_decay[i]*patch_distance[j,l]) for l in axes(patch_distance))  
-        end
-    end
+function _immigration(community_abundance, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64})
+    _comm_vector = vec(community_abundance)
+    for j in axes(current_community, 2)
+        return sum(dispersal_rate[i]*_comm_vector[l]*exp(-dispersal_decay[i]*patch_distance[j,l]) for l in axes(patch_distance, 1)) 
+    end 
 end
 
 function _environmental_effect(patch_location, species_id, environment_value::Vector{Float64}, environmental_optimum::Vector{Float64}; h=300, σ=50)
@@ -112,12 +111,13 @@ function _interaction_effect(patch_location, species_id, current_community, inte
     sum(interaction_strength[species_id,n]*current_community[patch_location[1], patch_location[2], n] for n in axes(current_community, 3))
 end
 
-function metacommunity_model(stuff...; rate_of_increase::Float64=0.05)
+function metacommunity_model(current_community, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64}; rate_of_increase::Float64=0.05)
     for i in axes(current_community, 3)
+        community_abundance = current_community[:,:,i]
         for j in 1:prod(_landscape_size) #❗
             current_abundance = current_community[patch_location[j], patch_location[j], i]
             environment = _environmental_effect()
-            immigration = _immigration()
+            immigration = _immigration(community_abundance, dispersal_rate, dispersal_decay, patch_distance)
             interaction = _interaction_effect()
             emmigration = current_abundance*dispersal_rate[i]
             abundance_new = current_abundance*exp(rate_of_increase + interaction + environment) + immigration - emmigration
@@ -130,6 +130,8 @@ set_interaction_strength!(interaction_strength; trophic_level)
 set_environmental_optimum!(environmental_optimum)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
+
+x = _immigration(current_community, dispersal_rate, dispersal_decay, patch_distance)
 
 
 _next_community = similar(current_community)
