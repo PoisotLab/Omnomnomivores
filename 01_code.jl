@@ -14,10 +14,6 @@ M = 10.0 # number of habitat patches (uniform for now)
 _landscape_size = (20, 20)
 _species_richness = 8 # number of species
 Ci = 0.05 # rate of increase
-h = 300 # scaling param
-σ = 50 # std dev relating to env effect
-μa = 0.25 # mean dispersal rate
-σa = μa*0.62 # std dev of dispersal rate
 
 # _THE_ ArrayTM
 
@@ -103,7 +99,7 @@ end
 
 function _immigration(current_community, dispersal_rate::Vector{Float64}, dispersal_decay::Vector{Float64}, patch_distance::Matrix{Float64})
     for i in axes(current_community, 3)
-        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working today
+        for j in 1:prod(_landscape_size) #❗ I know this is for a linear arrangement of habitat patches but thats how my brain is working today
             sum(dispersal_rate[i]*current_community[j,l,i]*exp(-dispersal_decay[i]*patch_distance[j,l]) for l in axes(patch_distance))  
         end
     end
@@ -117,15 +113,15 @@ function _interaction_effect(patch_location, species_id, current_community, inte
     sum(interaction_strength[species_id,n]*current_community[patch_location[1], patch_location[2], n] for n in axes(current_community, 3))
 end
 
-function metacommunity_model(stuff...)
+function metacommunity_model(stuff...; rate_of_increase::Float64=0.05)
     for i in axes(current_community, 3)
-        for j in 1:prod(_landscape_size) # I know this is for a linear arrangement of habitat patches but thats how my brain is working today
+        for j in 1:prod(_landscape_size) #❗
             current_abundance = current_community[patch_location[j], patch_location[j], i]
             environment = _environmental_effect()
             immigration = _immigration()
             interaction = _interaction_effect()
             emmigration = current_abundance*dispersal_rate[i]
-            abundance_new = current_abundance*exp(interaction + environment) + immigration - emmigration
+            abundance_new = current_abundance*exp(rate_of_increase + interaction + environment) + immigration - emmigration
         end
     end
 end
