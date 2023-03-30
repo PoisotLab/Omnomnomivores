@@ -158,42 +158,46 @@ function metacommunity_model(
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
     environment_value::Matrix{Float64},
-    environmental_optimum::Vector{Float64};
+    environmental_optimum::Vector{Float64},
+    time::Int64 = 2;
     rate_of_increase::Float64 = 0.05,
 )
-    _next_community = similar(current_community)
-    for i in axes(current_community, 3)
-        community_abundance = current_community[:, :, i]
-        for j in axes(current_community, 2), k in axes(current_community, 2)
-            patch_location = [j, k]
-            species_id = i
-            current_abundance = current_community[j, k, i]
-            environment = _environmental_effect(
-                patch_location,
-                species_id,
-                environment_value,
-                environmental_optimum,
-            )
-            immigration = _immigration(
-                community_abundance,
-                dispersal_rate,
-                dispersal_decay,
-                patch_distance,
-            )
-            interaction = _interaction_effect(
-                patch_location,
-                species_id,
-                current_community,
-                interaction_strength,
-            )
-            emmigration = current_abundance * dispersal_rate[i]
-            new_abundance =
-                current_abundance * exp(rate_of_increase + interaction + environment) +
-                immigration - emmigration
-            _next_community[j, k, i] = new_abundance # this is extra but makes for clearer reading?
+    for t in 1:time
+        _next_community = similar(current_community)
+        for i in axes(current_community, 3)
+            community_abundance = current_community[:, :, i]
+            for j in axes(current_community, 2), k in axes(current_community, 2)
+                patch_location = [j, k]
+                species_id = i
+                current_abundance = current_community[j, k, i]
+                environment = _environmental_effect(
+                    patch_location,
+                    species_id,
+                    environment_value,
+                    environmental_optimum,
+                )
+                immigration = _immigration(
+                    community_abundance,
+                    dispersal_rate,
+                    dispersal_decay,
+                    patch_distance,
+                )
+                interaction = _interaction_effect(
+                    patch_location,
+                    species_id,
+                    current_community,
+                    interaction_strength,
+                )
+                emmigration = current_abundance * dispersal_rate[i]
+                new_abundance =
+                    current_abundance * exp(rate_of_increase + interaction + environment) +
+                    immigration - emmigration
+                _next_community[j, k, i] = new_abundance # this is extra but makes for clearer reading?
+            end
         end
+        current_community = _next_community
+        return current_community
     end
-    return _next_community
 end
 
 set_trophic_levels!(trophic_level)
@@ -208,5 +212,6 @@ metacommunity_model(
     dispersal_decay,
     patch_distance,
     environment_value,
-    environmental_optimum;
+    environmental_optimum,
+    2,
 )
