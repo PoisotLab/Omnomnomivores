@@ -9,10 +9,8 @@ using Random
 ## Parameters
 
 t = 5 # number of timestamps
-M = 10.0 # number of habitat patches (uniform for now)
 _landscape_size = (20, 20)
 _species_richness = 8 # number of species
-Ci = 0.05 # rate of increase
 
 # _THE_ ArrayTM
 
@@ -132,7 +130,10 @@ function _environmental_effect(
 )
     return h - (
         h * exp(
-            -(environment_value[patch_location[1], patch_location[2]] - environmental_optimum[species_id])^2 /
+            -(
+                environment_value[patch_location[1], patch_location[2]] -
+                environmental_optimum[species_id]
+            )^2 /
             (2σ^2),
         )
     )
@@ -160,6 +161,7 @@ function metacommunity_model(
     environmental_optimum::Vector{Float64};
     rate_of_increase::Float64 = 0.05,
 )
+    _next_community = similar(current_community)
     for i in axes(current_community, 3)
         community_abundance = current_community[:, :, i]
         for j in axes(current_community, 2), k in axes(current_community, 2)
@@ -185,10 +187,13 @@ function metacommunity_model(
                 interaction_strength,
             )
             emmigration = current_abundance * dispersal_rate[i]
-            current_abundance * exp(rate_of_increase + interaction + environment) +
-            immigration - emmigration
+            new_abundance =
+                current_abundance * exp(rate_of_increase + interaction + environment) +
+                immigration - emmigration
+            _next_community[j, k, i] = new_abundance # this is extra but makes for clearer reading?
         end
     end
+    return _next_community
 end
 
 set_trophic_levels!(trophic_level)
@@ -197,6 +202,11 @@ set_environmental_optimum!(environmental_optimum)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-x = _immigration(current_community, dispersal_rate, dispersal_decay, patch_distance)
-
-_next_community = similar(current_community)
+metacommunity_model(
+    current_community,
+    dispersal_rate,
+    dispersal_decay,
+    patch_distance,
+    environment_value,
+    environmental_optimum;
+)
