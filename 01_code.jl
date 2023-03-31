@@ -57,7 +57,8 @@ for i in axes(patch_position, 1)
         patch_distance[i, j] =
             sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)) .^ 2.0))
     end
-end
+end #❗ I cant actually conceptualise distance and there must be a 🐛 here...
+patch_distance
 
 environment_value = zeros(Float64, (_landscape_size)) #❗
 
@@ -198,7 +199,7 @@ end
 
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
-set_environmental_optimum!(environmental_optimum)
+# set_environmental_optimum!(environmental_optimum)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
