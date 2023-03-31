@@ -105,17 +105,17 @@ end
 
 function _immigration(
     community_abundance,
+    species_id,
+    patch_location,
     dispersal_rate::Vector{Float64},
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
 )
     _comm_vector = vec(community_abundance)
-    for j in axes(current_community, 2)
         return sum(
-            dispersal_rate[i] * _comm_vector[l] *
-            exp(-dispersal_decay[i] * patch_distance[j, l]) for l in axes(patch_distance, 1)
+            dispersal_rate[species_id] * _comm_vector[l] *
+            exp(-dispersal_decay[species_id] * patch_distance[prod(patch_location), l]) for l in axes(patch_distance, 1)
         )
-    end
 end
 
 function _environmental_effect(
@@ -174,9 +174,11 @@ function metacommunity_model(
             )
             immigration = _immigration(
                 community_abundance,
+                species_id,
+                patch_location,
                 dispersal_rate,
                 dispersal_decay,
-                patch_distance,
+                patch_distance
             )
             interaction = _interaction_effect(
                 patch_location,
