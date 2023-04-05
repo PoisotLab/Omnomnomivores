@@ -52,11 +52,13 @@ end
 
 patch_position = CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
 patch_distance = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
-for i in axes(patch_position, 1)
-    for j in axes(patch_position, 2)
-        patch_distance[i, j] =
-            sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)) .^ 2.0))
+_patch_distance = zeros(Float64, _landscape_size)
+for x in axes(patch_distance, 1)
+    for i in axes(patch_position, 1), j in axes(patch_position, 2)
+        _patch_distance[i, j] =
+            sqrt(sum(((patch_position[x].I) .- (patch_position[i,j].I)) .^ 2.0))
     end
+    patch_distance[x, :] = vec(_patch_distance)
 end
 patch_distance
 
@@ -107,16 +109,17 @@ end
 function _immigration(
     community_abundance,
     species_id,
-    patch_location,
     dispersal_rate::Vector{Float64},
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
 )
+for i in axes(patch_distance, 1)
     _comm_vector = vec(community_abundance)
         return sum(
             dispersal_rate[species_id] * _comm_vector[l] *
-            exp(-dispersal_decay[species_id] * [0:1:399;][l]) for l in axes(patch_distance, 1)
+            exp(-dispersal_decay[species_id] * patch_distance[i,l]) for l in axes(patch_distance, 1)
         )
+end
 end #❗ I cant actually conceptualise distance and there must be a 🐛 here...
 
 function _environmental_effect(
@@ -176,7 +179,6 @@ function metacommunity_model(
             immigration = _immigration(
                 community_abundance,
                 species_id,
-                patch_location,
                 dispersal_rate,
                 dispersal_decay,
                 patch_distance
