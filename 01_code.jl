@@ -57,7 +57,7 @@ for i in axes(patch_position, 1)
         patch_distance[i, j] =
             sqrt(sum(((patch_position[i].I) .- (patch_position[j].I)) .^ 2.0))
     end
-end #❗ I cant actually conceptualise distance and there must be a 🐛 here...
+end
 patch_distance
 
 environment_value = zeros(Float64, (_landscape_size)) #❗
@@ -115,9 +115,9 @@ function _immigration(
     _comm_vector = vec(community_abundance)
         return sum(
             dispersal_rate[species_id] * _comm_vector[l] *
-            exp(-dispersal_decay[species_id] * patch_distance[prod(patch_location), l]) for l in axes(patch_distance, 1)
+            exp(-dispersal_decay[species_id] * [0:1:399;][l]) for l in axes(patch_distance, 1)
         )
-end
+end #❗ I cant actually conceptualise distance and there must be a 🐛 here...
 
 function _environmental_effect(
     patch_location,
