@@ -106,6 +106,9 @@ end
 
 ## Environmental optima ❗
 
+## Immigration term
+
+ #❗ I cant actually conceptualise distance and there must be a 🐛 here...
 function _immigration(
     community_abundance,
     species_id,
@@ -113,7 +116,7 @@ function _immigration(
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
 )
-    for i in axes(patch_distance, 1)
+    for i in axes(patch_distance, 1) # it is this indexing...
         _comm_vector = vec(community_abundance)
         return sum(
             dispersal_rate[species_id] * _comm_vector[l] *
@@ -121,7 +124,9 @@ function _immigration(
             l in axes(patch_distance, 1)
         )
     end
-end #❗ I cant actually conceptualise distance and there must be a 🐛 here...
+end
+
+## Environmental effect term
 
 function _environmental_effect(
     patch_location,
@@ -142,6 +147,8 @@ function _environmental_effect(
     )
 end
 
+## Interaction effect term
+
 function _interaction_effect(
     patch_location,
     species_id,
@@ -154,6 +161,8 @@ function _interaction_effect(
         n in axes(current_community, 3)
     )
 end
+
+## Full metacommunity model
 
 function metacommunity_model(
     current_community,
@@ -199,6 +208,8 @@ function metacommunity_model(
     end
     return _next_community
 end
+
+## 'Workflow'
 
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
