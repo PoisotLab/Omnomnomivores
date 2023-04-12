@@ -50,6 +50,7 @@ function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
     return dispersal_decay
 end
 
+# 🐛 this is bugging out the immigration 
 patch_position = CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
 patch_distance = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
 _patch_distance = zeros(Float64, _landscape_size)
@@ -108,7 +109,7 @@ end
 
 ## Immigration term
 
- #❗ I cant actually conceptualise distance and there must be a 🐛 here...
+ # 🐛 I cant actually conceptualise distance and there must be a 🐛 here...
 function _immigration(
     community_abundance,
     species_id,
@@ -116,7 +117,7 @@ function _immigration(
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
 )
-    for i in axes(patch_distance, 1) # it is this indexing...
+    for i in axes(patch_distance, 1) # 🐛 it is this indexing...
         _comm_vector = vec(community_abundance)
         return sum(
             dispersal_rate[species_id] * _comm_vector[l] *
