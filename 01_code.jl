@@ -110,21 +110,22 @@ end
 function set_environmental_optimum!(
     environmental_optimum::Vector{Float64},
     environment_value::Matrix{Float64},
-    trophic_level::Vector{Int8}
+    trophic_level::Vector{Int8},
 )
-    env_range = maximum(environment_value) - minimum(environment_value) 
+    env_range = maximum(environment_value) - minimum(environment_value)
     n_plants = count(==(1), trophic_level)
     n_herbivores = count(==(2), trophic_level)
     n_carnivores = count(==(3), trophic_level)
-    environmental_optimum[1:n_plants] .= env_range/n_plants
-    environmental_optimum[(n_plants + 1):(n_plants + n_herbivores)] .= env_range/n_herbivores
-    environmental_optimum[(end - n_carnivores):end] .= env_range/n_carnivores
+    environmental_optimum[1:n_plants] .= env_range / n_plants
+    environmental_optimum[(n_plants + 1):(n_plants + n_herbivores)] .=
+        env_range / n_herbivores
+    environmental_optimum[(end - n_carnivores):end] .= env_range / n_carnivores
     return environmental_optimum
 end
 
 ## Immigration term
 
- # 🐛 I cant actually conceptualise distance and there must be a 🐛 here...
+# 🐛 I cant actually conceptualise distance and there must be a 🐛 here...
 function _immigration(
     community_abundance,
     species_id,
