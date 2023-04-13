@@ -6,13 +6,11 @@ using Plots
 using SpatialBoundaries
 using Random
 
-## Parameters
+## Parameters and data framework
 
 t = 5 # number of timestamps
 _landscape_size = (20, 20)
 _species_richness = 8 # number of species
-
-# _THE_ ArrayTM
 
 current_community = fill(
     10.0, (
