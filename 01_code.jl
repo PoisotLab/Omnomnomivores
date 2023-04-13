@@ -106,7 +106,6 @@ function set_dispersal_rate!(
 end
 
 ## Environmental optimum
-# 🐛 need to assign unique val to each spp
 
 function set_environmental_optimum!(
     environmental_optimum::Vector{Float64},
@@ -117,10 +116,16 @@ function set_environmental_optimum!(
     n_plants = count(==(1), trophic_level)
     n_herbivores = count(==(2), trophic_level)
     n_carnivores = count(==(3), trophic_level)
-    environmental_optimum[1:n_plants] .= env_range / n_plants
-    environmental_optimum[(n_plants + 1):(n_plants + n_herbivores)] .=
-        env_range / n_herbivores
-    environmental_optimum[(end - n_carnivores):end] .= env_range / n_carnivores
+    for i in 1:n_plants
+        environmental_optimum[i] = env_range / n_plants*i
+    end
+    for j in 1:n_herbivores
+        environmental_optimum[(n_plants + j)] =
+        env_range / n_herbivores*j
+    end
+    for k in 1:n_carnivores
+        environmental_optimum[n_plants + n_herbivores + k] = env_range / n_carnivores*k
+    end
     return environmental_optimum
 end
 
