@@ -63,7 +63,7 @@ for x in axes(patch_distance, 1)
 end
 patch_distance
 
-environment_value = zeros(Float64, (_landscape_size)) #❗
+environment_value = rand(EdgeGradient(), _landscape_size) #❗
 
 function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
     plant_plant = Uniform(-0.1, 0.0)
@@ -106,6 +106,7 @@ function set_dispersal_rate!(
 end
 
 ## Environmental optimum
+# 🐛 need to assign unique val to each spp
 
 function set_environmental_optimum!(
     environmental_optimum::Vector{Float64},
