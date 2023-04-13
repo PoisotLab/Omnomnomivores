@@ -117,14 +117,14 @@ function set_environmental_optimum!(
     n_herbivores = count(==(2), trophic_level)
     n_carnivores = count(==(3), trophic_level)
     for i in 1:n_plants
-        environmental_optimum[i] = env_range / n_plants*i
+        environmental_optimum[i] = env_range / n_plants * i
     end
     for j in 1:n_herbivores
         environmental_optimum[(n_plants + j)] =
-        env_range / n_herbivores*j
+            env_range / n_herbivores * j
     end
     for k in 1:n_carnivores
-        environmental_optimum[n_plants + n_herbivores + k] = env_range / n_carnivores*k
+        environmental_optimum[n_plants + n_herbivores + k] = env_range / n_carnivores * k
     end
     return environmental_optimum
 end
