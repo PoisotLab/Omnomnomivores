@@ -106,6 +106,8 @@ function set_dispersal_rate!(
 end
 
 ## Environmental optimum
+ #❗ how optima are distribted is sus...
+# also could maybe be optimised??
 
 function set_environmental_optimum!(
     environmental_optimum::Vector{Float64},
