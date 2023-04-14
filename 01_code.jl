@@ -193,7 +193,8 @@ function metacommunity_model(
     dispersal_decay::Vector{Float64},
     patch_distance::Matrix{Float64},
     environment_value::Matrix{Float64},
-    environmental_optimum::Vector{Float64};
+    environmental_optimum::Vector{Float64},
+    interaction_strength::Matrix{Float64};
     rate_of_increase::Float64 = 0.05,
 )
     _next_community = similar(current_community)
@@ -247,4 +248,5 @@ metacommunity_model(
     patch_distance,
     environment_value,
     environmental_optimum,
+    interaction_strength
 )
