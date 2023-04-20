@@ -24,6 +24,11 @@ environmental_optimum = zeros(Float64, _species_richness)
 dispersal_decay = zeros(Float64, _species_richness)
 dispersal_rate = zeros(Float64, _species_richness)
 
+"""
+    set_trophic_levels!
+
+TODO
+"""
 function set_trophic_levels!(
     trophic_level::Vector{Int8};
     plants::Float64 = 0.5,
@@ -40,6 +45,11 @@ function set_trophic_levels!(
     return trophic_level
 end
 
+"""
+    set_dispersal_decay!
+
+TODO
+"""
 function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
     p = [(0.3, 0.3 / 4), (0.2, 0.2 / 4), (0.1, 0.1 / 4)]
     for s in axes(trophic_level, 1)
@@ -63,6 +73,11 @@ patch_distance
 
 environment_value = rand(EdgeGradient(), _landscape_size) #❗
 
+"""
+    set_interaction_strength!
+
+TODO
+"""
 function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
     plant_plant = Uniform(-0.1, 0.0)
     herb_plant = Uniform(-0.3, 0.0)
@@ -93,6 +108,11 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
     end
 end
 
+"""
+    set_dispersal_rate!
+
+TODO
+"""
 function set_dispersal_rate!(
     dispersal_rate::Vector{Float64};
     mean_dispersal_rate::Float64 = 0.25,
@@ -104,9 +124,14 @@ function set_dispersal_rate!(
 end
 
 ## Environmental optimum
- #❗ how optima are distribted is sus...
+#❗ how optima are distribted is sus...
 # also could maybe be optimised??
 
+"""
+    set_environmental_optimum!
+
+TODO
+"""
 function set_environmental_optimum!(
     environmental_optimum::Vector{Float64},
     environment_value::Matrix{Float64},
@@ -130,8 +155,13 @@ function set_environmental_optimum!(
 end
 
 ## Immigration term
-
 # 🐛 I cant actually conceptualise distance and there must be a 🐛 here...
+
+"""
+    _immigration
+
+TODO
+"""
 function _immigration(
     community_abundance,
     species_id,
@@ -151,6 +181,11 @@ end
 
 ## Environmental effect term
 
+"""
+    _environmental_effect
+
+TODO
+"""
 function _environmental_effect(
     patch_location,
     species_id,
@@ -172,6 +207,11 @@ end
 
 ## Interaction effect term
 
+"""
+    _interaction_effect
+
+TODO
+"""
 function _interaction_effect(
     patch_location,
     species_id,
@@ -187,6 +227,11 @@ end
 
 ## Full metacommunity model
 
+"""
+    metacommunity_model
+
+TODO
+"""
 function metacommunity_model(
     current_community,
     dispersal_rate::Vector{Float64},
@@ -248,5 +293,5 @@ metacommunity_model(
     patch_distance,
     environment_value,
     environmental_optimum,
-    interaction_strength
+    interaction_strength,
 )
