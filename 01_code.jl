@@ -24,6 +24,9 @@ environmental_optimum = zeros(Float64, _species_richness)
 dispersal_decay = zeros(Float64, _species_richness)
 dispersal_rate = zeros(Float64, _species_richness)
 
+environment_value = rand(EdgeGradient(), _landscape_size) #❗
+patch_position = CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
+
 """
     set_trophic_levels!
 
@@ -62,21 +65,6 @@ function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
     end
     return dispersal_decay
 end
-
-# 🐛 this is bugging out the immigration 
-patch_position = CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
-patch_distance = zeros(Float64, (prod(_landscape_size), prod(_landscape_size)))
-_patch_distance = zeros(Float64, _landscape_size)
-for x in axes(patch_distance, 1)
-    for i in axes(patch_position, 1), j in axes(patch_position, 2)
-        _patch_distance[i, j] =
-            sqrt(sum(((patch_position[x].I) .- (patch_position[i, j].I)) .^ 2.0))
-    end
-    patch_distance[x, :] = vec(_patch_distance)
-end
-patch_distance
-
-environment_value = rand(EdgeGradient(), _landscape_size) #❗
 
 """
     set_interaction_strength!
@@ -182,16 +170,23 @@ function _immigration(
     species_id,
     dispersal_rate::Vector{Float64},
     dispersal_decay::Vector{Float64},
-    patch_distance::Matrix{Float64},
+    patch_location,
+    patch_position::CartesianIndices,
 )
-    for i in axes(patch_distance, 1) # 🐛 it is this indexing...
-        _comm_vector = vec(community_abundance)
-        return sum(
-            dispersal_rate[species_id] * _comm_vector[l] *
-            exp(-dispersal_decay[species_id] * patch_distance[i, l]) for
-            l in axes(patch_distance, 1)
-        )
-    end
+    return sum(
+        dispersal_rate[species_id] * community_abundance[i, j] *
+        exp(
+            -dispersal_decay[species_id] * sqrt(
+                sum(
+                    (
+                        (patch_position[patch_location[1], patch_location[2]].I) .-
+                        (patch_position[i, j].I)
+                    ) .^ 2.0,
+                ),
+            ),
+        ) for
+        i in axes(patch_position, 1), j in axes(patch_position, 1)
+    )
 end
 
 ## Environmental effect term
@@ -254,7 +249,7 @@ function metacommunity_model(
     current_community,
     dispersal_rate::Vector{Float64},
     dispersal_decay::Vector{Float64},
-    patch_distance::Matrix{Float64},
+    patch_position,
     environment_value::Matrix{Float64},
     environmental_optimum::Vector{Float64},
     interaction_strength::Matrix{Float64};
@@ -278,7 +273,8 @@ function metacommunity_model(
                 species_id,
                 dispersal_rate,
                 dispersal_decay,
-                patch_distance,
+                patch_location,
+                patch_position,
             )
             interaction = _interaction_effect(
                 patch_location,
@@ -308,7 +304,7 @@ metacommunity_model(
     current_community,
     dispersal_rate,
     dispersal_decay,
-    patch_distance,
+    patch_position,
     environment_value,
     environmental_optimum,
     interaction_strength,
