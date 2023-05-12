@@ -232,7 +232,7 @@ function _interaction_effect(
     interaction_strength,
 )
     return sum(
-        interaction_strength[n, species_id] *
+        interaction_strength[species_id, n] *
         current_community[patch_location[1], patch_location[2], n] for
         n in axes(current_community, 3)
     )
