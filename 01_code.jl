@@ -254,42 +254,51 @@ function metacommunity_model(
     environmental_optimum::Vector{Float64},
     interaction_strength::Matrix{Float64};
     rate_of_increase::Float64 = 0.05,
+    generations::Int64 = 2,
 )
-    _next_community = similar(current_community)
-    for i in axes(current_community, 3)
-        community_abundance = current_community[:, :, i]
-        for j in axes(current_community, 2), k in axes(current_community, 2)
-            patch_location = [j, k]
-            species_id = i
-            current_abundance = current_community[j, k, i]
-            environment = _environmental_effect(
-                patch_location,
-                species_id,
-                environment_value,
-                environmental_optimum,
-            )
-            immigration = _immigration(
-                community_abundance,
-                species_id,
-                dispersal_rate,
-                dispersal_decay,
-                patch_location,
-                patch_position,
-            )
-            interaction = _interaction_effect(
-                patch_location,
-                species_id,
-                current_community,
-                interaction_strength,
-            )
-            emmigration = current_abundance * dispersal_rate[i]
-            new_abundance =
-                current_abundance * exp(rate_of_increase + interaction + environment) +
-                immigration - emmigration
-            _next_community[j, k, i] = new_abundance # this is extra but makes for clearer reading?
+    final_communty = fill(
+        10.0, (
+            _landscape_size...,
+            _species_richness,
+            generations,
+        ))
+
+    for t in 1:generations
+        for i in axes(current_community, 3)
+            community_abundance = final_communty[:, :, i, t] #🐛 this is a no-no but busy testing
+            for j in axes(current_community, 2), k in axes(current_community, 2)
+                patch_location = [j, k]
+                species_id = i
+                current_abundance = final_communty[j, k, i, t]
+                environment = _environmental_effect(
+                    patch_location,
+                    species_id,
+                    environment_value,
+                    environmental_optimum,
+                )
+                immigration = _immigration(
+                    community_abundance,
+                    species_id,
+                    dispersal_rate,
+                    dispersal_decay,
+                    patch_location,
+                    patch_position,
+                )
+                interaction = _interaction_effect(
+                    patch_location,
+                    species_id,
+                    current_community,
+                    interaction_strength,
+                )
+                emmigration = current_abundance * dispersal_rate[i]
+                new_abundance =
+                    current_abundance * exp(rate_of_increase + interaction + environment) +
+                    immigration - emmigration
+                final_communty[j, k, i, t] = new_abundance
+            end
         end
     end
-    return _next_community
+    return final_communty
 end
 
 ## 'Workflow'
@@ -308,4 +317,5 @@ metacommunity_model(
     environment_value,
     environmental_optimum,
     interaction_strength,
+    generations = 100
 )
