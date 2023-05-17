@@ -262,13 +262,13 @@ function metacommunity_model(
             generations,
         ))
 
-    for t in 1:generations
+    for t in 2:generations
         for i in axes(current_community, 3)
             community_abundance = final_communty[:, :, i, t] #🐛 this is a no-no but busy testing
             for j in axes(current_community, 2), k in axes(current_community, 2)
                 patch_location = [j, k]
                 species_id = i
-                current_abundance = final_communty[j, k, i, t]
+                current_abundance = final_communty[j, k, i, t-1]
                 environment = _environmental_effect(
                     patch_location,
                     species_id,
