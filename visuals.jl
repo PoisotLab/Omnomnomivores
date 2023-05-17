@@ -12,9 +12,9 @@ clims = (global_min, global_max)
 
 anim = @animate for i=1:100
    plot(heatmap(environment_value, title="Environment"),
-   heatmap(meta_comm[:, :, 1, i], title="Plant (Eopt 0.25)", clims = (global_min, global_max)),
-   heatmap(meta_comm[:, :, 6, i], title="Herbivore (Eopt 1.0)", clims = (global_min, global_max)),
-   heatmap(meta_comm[:, :, 7, i], title="Carnivore (Eopt 0.5)", clims = (global_min, global_max)),
+   heatmap(meta_comm[:, :, 1, i], title="Plant (Eopt 0.25)"),
+   heatmap(meta_comm[:, :, 6, i], title="Herbivore (Eopt 1.0)"),
+   heatmap(meta_comm[:, :, 7, i], title="Carnivore (Eopt 0.5)"),
    layout=(2,2))
 end
 gif(anim, "figures/all_test.gif", fps = 1)
