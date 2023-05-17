@@ -2,7 +2,6 @@
 using Distributions
 using NeutralLandscapes
 using OffsetArrays #(at least at some point we'll be brave and try 0 indexing)
-using Plots
 using SpatialBoundaries
 using Random
 
@@ -309,13 +308,13 @@ set_environmental_optimum!(environmental_optimum, environment_value, trophic_lev
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-metacommunity_model(
+meta_comm = metacommunity_model(
     current_community,
     dispersal_rate,
     dispersal_decay,
     patch_position,
     environment_value,
     environmental_optimum,
-    interaction_strength,
-    generations = 100
+    interaction_strength;
+    generations = 100,
 )
