@@ -262,13 +262,13 @@ function metacommunity_model(
             generations,
         ))
 
-    for t in 2:generations
+    for t in 1:generations-1
         for i in axes(current_community, 3)
             community_abundance = final_communty[:, :, i, t] #🐛 this is a no-no but busy testing
             for j in axes(current_community, 2), k in axes(current_community, 2)
                 patch_location = [j, k]
                 species_id = i
-                current_abundance = final_communty[j, k, i, t-1]
+                current_abundance = final_communty[j, k, i, t]
                 environment = _environmental_effect(
                     patch_location,
                     species_id,
@@ -286,14 +286,14 @@ function metacommunity_model(
                 interaction = _interaction_effect(
                     patch_location,
                     species_id,
-                    current_community,
+                    community_abundance,
                     interaction_strength,
                 )
                 emmigration = current_abundance * dispersal_rate[i]
                 new_abundance =
                     current_abundance * exp(rate_of_increase + interaction + environment) +
                     immigration - emmigration
-                final_communty[j, k, i, t] = new_abundance
+                final_communty[j, k, i, t+1] = new_abundance
             end
         end
     end
