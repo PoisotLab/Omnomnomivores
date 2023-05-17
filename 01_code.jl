@@ -291,7 +291,7 @@ function metacommunity_model(
                 )
                 emmigration = current_abundance * dispersal_rate[i]
                 new_abundance =
-                    current_abundance * exp(rate_of_increase + interaction + environment) +
+                current_abundance * exp(rate_of_increase + interaction + environment) +
                     immigration - emmigration
                 final_communty[j, k, i, t] = new_abundance
             end
