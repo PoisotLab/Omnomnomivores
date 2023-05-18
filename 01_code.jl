@@ -207,11 +207,11 @@ function _environmental_effect(
 )
     return h - (
         h * exp(
-            -(
+            -((
                 environment_value[patch_location[1], patch_location[2]] -
                 environmental_optimum[species_id]
             )^2 /
-            (2σ^2),
+            (2σ^2)),
         )
     )
 end
