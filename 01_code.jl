@@ -1,30 +1,8 @@
-## packages here
 using Distributions
 using NeutralLandscapes
 using OffsetArrays #(at least at some point we'll be brave and try 0 indexing)
 using SpatialBoundaries
 using Random
-
-## Parameters and data framework
-
-t = 5 # number of timestamps
-_landscape_size = (20, 20)
-_species_richness = 8 # number of species
-
-current_community = fill(
-    10.0, (
-        _landscape_size...,
-        _species_richness,
-    ))
-
-interaction_strength = zeros(Float64, (_species_richness, _species_richness))
-trophic_level = zeros(Int8, _species_richness)
-environmental_optimum = zeros(Float64, _species_richness)
-dispersal_decay = zeros(Float64, _species_richness)
-dispersal_rate = zeros(Float64, _species_richness)
-
-environment_value = rand(EdgeGradient(), _landscape_size) #❗
-patch_position = CartesianIndices((1:_landscape_size[1], 1:_landscape_size[2]))
 
 """
     set_trophic_levels!
@@ -114,7 +92,7 @@ drawing from a normal distribution. The μ can be specified but defaults to 0.25
 """
 function set_dispersal_rate!(
     dispersal_rate::Vector{Float64};
-    mean_dispersal_rate::Float64 = 0.25,
+    mean_dispersal_rate::Float64 = 0.1,
 )
     for s in axes(trophic_level, 1)
         dispersal_rate[s] = rand(Normal((mean_dispersal_rate, mean_dispersal_rate / 4)...))
@@ -165,27 +143,19 @@ Calculates the number of individuals of the current species that will immigrate
 (𝐼) to the current landscape patch from all other landscape patches.
 """
 function _immigration(
-    community_abundance,
-    species_id,
-    dispersal_rate::Vector{Float64},
-    dispersal_decay::Vector{Float64},
-    patch_location,
-    patch_position::CartesianIndices,
+    abundances,
+    location,
+    rate,
+    decay,
 )
-    return sum(
-        dispersal_rate[species_id] * community_abundance[i, j] *
-        exp(
-            -dispersal_decay[species_id] * sqrt(
-                sum(
-                    (
-                        (patch_position[patch_location[1], patch_location[2]].I) .-
-                        (patch_position[i, j].I)
-                    ) .^ 2.0,
-                ),
-            ),
-        ) for
-        i in axes(patch_position, 1), j in axes(patch_position, 1)
-    )
+    immigration_counter = zero(eltype(abundances))
+    for i in axes(abundances, 1)
+        for j in axes(abundances, 2)
+            d = sqrt(sum(((i, j) .- location) .^ 2.0))
+            immigration_counter += exp(-decay * d) * (rate * abundances[i, j])
+        end
+    end
+    return immigration_counter
 end
 
 ## Environmental effect term
@@ -202,8 +172,8 @@ function _environmental_effect(
     species_id,
     environment_value::Matrix{Float64},
     environmental_optimum::Vector{Float64};
-    h = 300,
-    σ = 50,
+    h = 300.0,
+    σ = 50.0,
 )
     return h - (
         h * exp(
@@ -239,84 +209,87 @@ function _interaction_effect(
     )
 end
 
-## Full metacommunity model
-
 """
     metacommunity_model
 
 TODO
 """
-function metacommunity_model(
-    current_community,
+function simulate!(
+    metacommunity::Array{Float64, 4},
     dispersal_rate::Vector{Float64},
     dispersal_decay::Vector{Float64},
-    patch_position,
-    environment_value::Matrix{Float64},
+    landscape::Matrix{Float64},
     environmental_optimum::Vector{Float64},
     interaction_strength::Matrix{Float64};
     rate_of_increase::Float64 = 0.05,
-    generations::Int64 = 2,
 )
-    final_communty = fill(
-        10.0, (
-            _landscape_size...,
-            _species_richness,
-            generations,
-        ))
-
-    for t in 2:generations
-        for i in axes(current_community, 3)
-            community_abundance = final_communty[:, :, i, t - 1] #🐛 this is a no-no but busy testing
-            for j in axes(current_community, 2), k in axes(current_community, 2)
-                patch_location = [j, k]
-                species_id = i
-                current_abundance = final_communty[j, k, i, t - 1]
-                environment = _environmental_effect(
-                    patch_location,
-                    species_id,
-                    environment_value,
-                    environmental_optimum,
-                )
-                immigration = _immigration(
-                    community_abundance,
-                    species_id,
-                    dispersal_rate,
-                    dispersal_decay,
-                    patch_location,
-                    patch_position,
-                )
-                interaction = _interaction_effect(
-                    patch_location,
-                    species_id,
-                    community_abundance,
-                    interaction_strength,
-                )
-                emmigration = current_abundance * dispersal_rate[i]
-                new_abundance =
-                    current_abundance * exp(rate_of_increase + interaction + environment) +
-                    immigration - emmigration
-                final_communty[j, k, i, t] = new_abundance
+    for generation in 1:(generations - 1)
+        for species in axes(metacommunity, 3)
+            abundances = view(metacommunity, :, :, species, generation)
+            for x in axes(metacommunity, 1)
+                for y in axes(metacommunity, 2)
+                    patch_location = (x, y)
+                    current_abundance = abundances[x, y]
+                    environment = _environmental_effect(
+                        patch_location,
+                        species,
+                        landscape,
+                        environmental_optimum,
+                    )
+                    immigration = _immigration(
+                        abundances,
+                        patch_location,
+                        dispersal_rate[species],
+                        dispersal_decay[species],
+                    )
+                    interaction = _interaction_effect(
+                        patch_location,
+                        species,
+                        abundances,
+                        interaction_strength,
+                    )
+                    emmigration = current_abundance * dispersal_rate[species]
+                    immigration = emmigration = 0.0
+                    new_abundance =
+                        current_abundance *
+                        exp(rate_of_increase + interaction + environment) +
+                        immigration - emmigration
+                    metacommunity[x, y, species, generation + 1] = new_abundance
+                end
             end
         end
     end
-    return final_communty
+    return metacommunity
 end
 
 ## 'Workflow'
 
+landscape_size = (11, 19)
+species_richness = 12
+generations = 60
+
+interaction_strength = zeros(Float64, (species_richness, species_richness))
+trophic_level = zeros(Int8, species_richness)
+environmental_optimum = zeros(Float64, species_richness)
+dispersal_decay = zeros(Float64, species_richness)
+dispersal_rate = zeros(Float64, species_richness)
+
+environment = rand(DiamondSquare(), landscape_size) #❗
+
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
-set_environmental_optimum!(environmental_optimum, environment_value, trophic_level)
+set_environmental_optimum!(environmental_optimum, environment, trophic_level)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-meta_comm = metacommunity_model(
-    current_community,
+# Set an initial metaco object
+metacommunity = fill(10.0, (landscape_size..., species_richness, generations))
+
+meta_comm = simulate!(
+    metacommunity,
     dispersal_rate,
     dispersal_decay,
-    patch_position,
-    environment_value,
+    environment,
     environmental_optimum,
-    interaction_strength;
-    generations = 100,
+    interaction_strength,
 )
