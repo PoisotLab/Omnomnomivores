@@ -207,11 +207,13 @@ function _environmental_effect(
 )
     return h - (
         h * exp(
-            -((
-                environment_value[patch_location[1], patch_location[2]] -
-                environmental_optimum[species_id]
-            )^2 /
-            (2σ^2)),
+            -(
+                (
+                    environment_value[patch_location[1], patch_location[2]] -
+                    environmental_optimum[species_id]
+                )^2 /
+                (2σ^2)
+            ),
         )
     )
 end
@@ -264,11 +266,11 @@ function metacommunity_model(
 
     for t in 2:generations
         for i in axes(current_community, 3)
-            community_abundance = final_communty[:, :, i, t-1] #🐛 this is a no-no but busy testing
+            community_abundance = final_communty[:, :, i, t - 1] #🐛 this is a no-no but busy testing
             for j in axes(current_community, 2), k in axes(current_community, 2)
                 patch_location = [j, k]
                 species_id = i
-                current_abundance = final_communty[j, k, i, t-1]
+                current_abundance = final_communty[j, k, i, t - 1]
                 environment = _environmental_effect(
                     patch_location,
                     species_id,
@@ -291,7 +293,7 @@ function metacommunity_model(
                 )
                 emmigration = current_abundance * dispersal_rate[i]
                 new_abundance =
-                current_abundance * exp(rate_of_increase + interaction + environment) +
+                    current_abundance * exp(rate_of_increase + interaction + environment) +
                     immigration - emmigration
                 final_communty[j, k, i, t] = new_abundance
             end
