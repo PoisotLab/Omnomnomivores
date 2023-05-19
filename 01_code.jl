@@ -36,7 +36,7 @@ level of the species. Normal distributionas are charactersied as follows: plants
 μ = 0.3, herbivores μ = 0.2, and carnivores μ = 0.1. In all instances σ = μ/4.
 """
 function set_dispersal_decay!(dispersal_decay::Vector{Float64}; trophic_level)
-    p = [(0.3, 0.3 / 4), (0.2, 0.2 / 4), (0.1, 0.1 / 4)]
+    p = [(L, 0.25L) for L in [0.3, 0.2, 0.1]]
     for s in axes(trophic_level, 1)
         dispersal_decay[s] = rand(Normal(p[trophic_level[s]]...))
     end
@@ -59,28 +59,25 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
     plant_herb = Uniform(0.0, 0.1)
     pred_herb = Uniform(-0.1, 0.0)
     herb_pred = Uniform(0.0, 0.08)
-    for i in axes(interaction_strength, 2)
+    S = length(trophic_level)
+    for i in axes(interaction_strength, 1)
         for j in axes(interaction_strength, 2)
             if (trophic_level[i] == 1 && trophic_level[j] == 1)
-                interaction_strength[i, j] =
-                    rand(plant_plant, 1)[1] / 0.33 * length(trophic_level)
+                interaction_strength[i, j] = rand(plant_plant)
             elseif (trophic_level[i] == 2 && trophic_level[j] == 1)
-                interaction_strength[i, j] =
-                    rand(herb_plant, 1)[1] / 0.33 * length(trophic_level)
+                interaction_strength[i, j] = rand(herb_plant)
             elseif (trophic_level[i] == 1 && trophic_level[j] == 2)
-                interaction_strength[i, j] =
-                    rand(plant_herb, 1)[1] / 0.33 * length(trophic_level)
+                interaction_strength[i, j] = rand(plant_herb)
             elseif (trophic_level[i] == 3 && trophic_level[j] == 2)
-                interaction_strength[i, j] =
-                    rand(pred_herb, 1)[1] / 0.33 * length(trophic_level)
+                interaction_strength[i, j] = rand(pred_herb)
             elseif (trophic_level[i] == 2 && trophic_level[j] == 3)
-                interaction_strength[i, j] =
-                    rand(herb_pred, 1)[1] / 0.33 * length(trophic_level)
+                interaction_strength[i, j] = rand(herb_pred)
             else
                 interaction_strength[i, j] = 0.0
             end
         end
     end
+    return interaction_strength ./ (0.33S)
 end
 
 """
