@@ -52,6 +52,8 @@ species. The ranges of the distributions are as follows: plant-plant (-0.1,
 0.0), herbivore-plant (-0.3, 0.0), plant-herbivore (0.0, 0.1),
 carnivore-herbivore (-0.1, 0.0), herbivore-carnivore (0.0, 0.08), all other
 combinations are set to zero.
+
+Interaction strength go FROM ROW, TO COLUMN
 """
 function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
     plant_plant = Uniform(-0.1, 0.0)
@@ -59,22 +61,16 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
     plant_herb = Uniform(0.0, 0.1)
     pred_herb = Uniform(-0.1, 0.0)
     herb_pred = Uniform(0.0, 0.08)
+    M = [
+        plant_plant plant_herb nothing
+        herb_plant nothing herb_pred
+        nothing pred_herb nothing
+    ]
     S = length(trophic_level)
-    for i in axes(interaction_strength, 1)
-        for j in axes(interaction_strength, 2)
-            if (trophic_level[i] == 1 && trophic_level[j] == 1)
-                interaction_strength[i, j] = rand(plant_plant)
-            elseif (trophic_level[i] == 2 && trophic_level[j] == 1)
-                interaction_strength[i, j] = rand(herb_plant)
-            elseif (trophic_level[i] == 1 && trophic_level[j] == 2)
-                interaction_strength[i, j] = rand(plant_herb)
-            elseif (trophic_level[i] == 3 && trophic_level[j] == 2)
-                interaction_strength[i, j] = rand(pred_herb)
-            elseif (trophic_level[i] == 2 && trophic_level[j] == 3)
-                interaction_strength[i, j] = rand(herb_pred)
-            else
-                interaction_strength[i, j] = 0.0
-            end
+    for (i, tl_i) in enumerate(trophic_level)
+        for (j, tl_j) in enumerate(trophic_level)
+            interaction_strength[i, j] =
+                isnothing(M[tl_i, tl_j]) ? 0.0 : rand(M[tl_i, tl_j])
         end
     end
     return interaction_strength ./ (0.33S)
@@ -165,24 +161,19 @@ species in the current landscape patch. The scaling parameter and σ can be
 specified but default to h = 300, σ = 50.
 """
 function _environmental_effect(
-    patch_location,
-    species_id,
-    environment_value::Matrix{Float64},
+    metacommunity,
+    species,
+    patch,
+    generation,
+    landscape::Matrix{Float64},
     environmental_optimum::Vector{Float64};
     h = 300.0,
     σ = 50.0,
 )
-    return h - (
-        h * exp(
-            -(
-                (
-                    environment_value[patch_location[1], patch_location[2]] -
-                    environmental_optimum[species_id]
-                )^2 /
-                (2σ^2)
-            ),
-        )
-    )
+    Δ = landscape[patch...] - environmental_optimum[species]
+    ξ = 2σ^2.0
+    modifier = exp(-(Δ^2.0) / (ξ))
+    return h * (1 - modifier)
 end
 
 ## Interaction effect term
@@ -194,16 +185,14 @@ Calcualtes the per capita effect (𝐵) of all species on the abundance of the
 current species based on interaction strength and current abundance.
 """
 function _interaction_effect(
-    patch_location,
-    species_id,
-    current_community,
+    metacommunity,
+    species,
+    patch,
+    generation,
     interaction_strength,
 )
-    return sum(
-        interaction_strength[species_id, n] *
-        current_community[patch_location[1], patch_location[2], n] for
-        n in axes(current_community, 3)
-    )
+    others = metacommunity[patch..., :, generation]
+    return sum(interaction_strength[:, species] .* others)
 end
 
 """
@@ -228,8 +217,10 @@ function simulate!(
                     patch_location = (x, y)
                     current_abundance = abundances[x, y]
                     environment = _environmental_effect(
-                        patch_location,
+                        metacommunity,
                         species,
+                        patch_location,
+                        generation,
                         landscape,
                         environmental_optimum,
                     )
@@ -240,9 +231,10 @@ function simulate!(
                         dispersal_decay[species],
                     )
                     interaction = _interaction_effect(
-                        patch_location,
+                        metacommunity,
                         species,
-                        abundances,
+                        patch_location,
+                        generation,
                         interaction_strength,
                     )
                     emmigration = current_abundance * dispersal_rate[species]
@@ -263,7 +255,7 @@ end
 
 landscape_size = (11, 19)
 species_richness = 12
-generations = 60
+generations = 100
 
 interaction_strength = zeros(Float64, (species_richness, species_richness))
 trophic_level = zeros(Int8, species_richness)
@@ -282,7 +274,7 @@ set_dispersal_decay!(dispersal_decay; trophic_level)
 # Set an initial metaco object
 metacommunity = fill(10.0, (landscape_size..., species_richness, generations))
 
-meta_comm = simulate!(
+simulate!(
     metacommunity,
     dispersal_rate,
     dispersal_decay,
