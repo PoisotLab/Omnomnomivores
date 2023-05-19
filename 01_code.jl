@@ -251,7 +251,7 @@ environmental_optimum = zeros(Float64, species_richness)
 dispersal_decay = zeros(Float64, species_richness)
 dispersal_rate = zeros(Float64, species_richness)
 
-environment = rand(DiamondSquare(), landscape_size) .* 79 .+ 1.0
+environment = rand(DiamondSquare(), landscape_size) .* 2.0 .- 1.0
 
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
