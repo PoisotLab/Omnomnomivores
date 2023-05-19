@@ -109,19 +109,13 @@ function set_environmental_optimum!(
     environment_value::Matrix{Float64},
     trophic_level::Vector{Int8},
 )
-    env_range = maximum(environment_value) - minimum(environment_value)
-    n_plants = count(==(1), trophic_level)
-    n_herbivores = count(==(2), trophic_level)
-    n_carnivores = count(==(3), trophic_level)
-    for i in 1:n_plants
-        environmental_optimum[i] = env_range / n_plants * i
-    end
-    for j in 1:n_herbivores
-        environmental_optimum[(n_plants + j)] =
-            env_range / n_herbivores * j
-    end
-    for k in 1:n_carnivores
-        environmental_optimum[n_plants + n_herbivores + k] = env_range / n_carnivores * k
+    env_range = extrema(environment_value)
+    for tl in sort(unique(trophic_level))
+        sp_at_level = findall(==(tl), trophic_level)
+        if ~isempty(sp_at_level)
+            environmental_optimum[sp_at_level] .=
+                LinRange(env_range..., length(sp_at_level))
+        end
     end
     return environmental_optimum
 end
@@ -175,8 +169,6 @@ function _environmental_effect(
     modifier = exp(-(Δ^2.0) / (ξ))
     return h * (1 - modifier)
 end
-
-## Interaction effect term
 
 """
     _interaction_effect
