@@ -93,10 +93,6 @@ function set_dispersal_rate!(
     return dispersal_rate
 end
 
-## Environmental optimum
-#❗ how optima are distribted is sus...
-# also could maybe be optimised??
-
 """
     set_environmental_optimum!
 
@@ -161,13 +157,13 @@ function _environmental_effect(
     generation,
     landscape::Matrix{Float64},
     environmental_optimum::Vector{Float64};
-    h = 300.0,
-    σ = 50.0,
+    h = 1.0,
+    σ = 2.0,
 )
     Δ = landscape[patch...] - environmental_optimum[species]
     ξ = 2σ^2.0
     modifier = exp(-(Δ^2.0) / (ξ))
-    return h * (1 - modifier)
+    return h - h * modifier
 end
 
 """
@@ -231,11 +227,11 @@ function simulate!(
                     )
                     emmigration = current_abundance * dispersal_rate[species]
                     immigration = emmigration = 0.0
-                    new_abundance =
-                        current_abundance *
-                        exp(rate_of_increase + interaction + environment) +
-                        immigration - emmigration
-                    metacommunity[x, y, species, generation + 1] = new_abundance
+                    growth_rate = exp(rate_of_increase + environment + interaction)
+                    migration_change = immigration - emmigration
+                    metacommunity[x, y, species, generation + 1] =
+                        metacommunity[x, y, species, generation] * growth_rate +
+                        migration_change
                 end
             end
         end
@@ -245,9 +241,9 @@ end
 
 ## 'Workflow'
 
-landscape_size = (11, 19)
+landscape_size = (5, 7)
 species_richness = 12
-generations = 100
+generations = 5
 
 interaction_strength = zeros(Float64, (species_richness, species_richness))
 trophic_level = zeros(Int8, species_richness)
@@ -255,7 +251,7 @@ environmental_optimum = zeros(Float64, species_richness)
 dispersal_decay = zeros(Float64, species_richness)
 dispersal_rate = zeros(Float64, species_richness)
 
-environment = rand(DiamondSquare(), landscape_size) #❗
+environment = rand(DiamondSquare(), landscape_size) .* 79 .+ 1.0
 
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
