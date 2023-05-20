@@ -1,6 +1,5 @@
 using Distributions
 using NeutralLandscapes
-using OffsetArrays #(at least at some point we'll be brave and try 0 indexing)
 using SpatialBoundaries
 using Random
 
@@ -163,7 +162,7 @@ function _environmental_effect(
     Δ = landscape[patch...] - environmental_optimum[species]
     ξ = 2σ^2.0
     modifier = exp(-(Δ^2.0) / (ξ))
-    return h - h * modifier
+    return h * (modifier - 1)
 end
 
 """
