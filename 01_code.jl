@@ -193,11 +193,11 @@ function simulate!(
     dispersal_decay::Vector{Float64},
     landscape::Matrix{Float64},
     environmental_optimum::Vector{Float64},
-    interaction_strength::Matrix{Float64};
-    rate_of_increase::Float64 = 0.05,
+    interaction_strength::Matrix{Float64},
 )
     for generation in 1:(generations - 1)
         for species in axes(metacommunity, 3)
+            rate_of_increase = trophic_level[species] == 1 ? 1e-1 : -1e-3
             abundances = view(metacommunity, :, :, species, generation)
             for x in axes(metacommunity, 1)
                 for y in axes(metacommunity, 2)
