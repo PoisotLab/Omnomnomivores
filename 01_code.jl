@@ -4,9 +4,9 @@ using SpatialBoundaries
 using Random
 using ProgressMeter
 
-landscape_size = (25, 25)
-species_richness = 40
-generations = 25
+landscape_size = (20, 20)
+species_richness = 80
+generations = 150
 
 # Load the functions we need from the lib folder
 include("lib/01_species_creation.jl")
@@ -28,8 +28,9 @@ set_environmental_optimum!(environmental_optimum, environment, trophic_level)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-# Set an initial metacommunity object
-metacommunity = fill(10.0, (landscape_size..., species_richness, generations))
+# Set an initial metacommunity object, only the first timestep is set to 10.0
+metacommunity = fill(0.0, (landscape_size..., species_richness, generations))
+metacommunity[:, :, :, 1] .= 10.0
 
 # Run the model
 simulate!(
@@ -57,7 +58,7 @@ end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
-    lines!(axs[end], abund[species, :])
+    lines!(axs[end], abund[species, 50:end])
 end
 
 current_figure()

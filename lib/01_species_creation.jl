@@ -88,7 +88,8 @@ function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophi
             end
         end
     end
-    return interaction_strength ./ (0.33S)
+    interaction_strength ./= (0.33 * S)
+    return interaction_strength
 end
 
 """
