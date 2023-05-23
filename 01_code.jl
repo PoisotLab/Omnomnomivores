@@ -147,7 +147,7 @@ end
 
 Calculates the impact of environment (𝐴) on the abundance of the current
 species in the current landscape patch. The scaling parameter and σ can be
-specified but default to h = 300, σ = 50.
+specified but default to h = 4 000, σ = 5.
 """
 function _environmental_effect(
     metacommunity,
@@ -156,8 +156,8 @@ function _environmental_effect(
     generation,
     landscape::Matrix{Float64},
     environmental_optimum::Vector{Float64};
-    h = 1.0,
-    σ = 2.0,
+    h = 4000,
+    σ = 5,
 )
     Δ = landscape[patch...] - environmental_optimum[species]
     ξ = 2σ^2.0
