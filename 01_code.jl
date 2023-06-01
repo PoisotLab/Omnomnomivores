@@ -28,9 +28,9 @@ set_environmental_optimum!(environmental_optimum, environment, trophic_level)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-# Set an initial metacommunity object, only the first timestep is set to 10.0
+# Set an initial metacommunity object, only the first timestep for plants is set to 10.0
 metacommunity = fill(0.0, (landscape_size..., species_richness, generations))
-metacommunity[:, :, :, 1] .= 10.0
+metacommunity[:, :, findall(trophic_level .< 2), 1] .= 10.0
 
 # Run the model
 simulate!(
