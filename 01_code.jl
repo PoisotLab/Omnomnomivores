@@ -30,9 +30,9 @@ set_dispersal_decay!(dispersal_decay; trophic_level)
 
 # Set an initial metacommunity object, only the first timestep for plants is set to 10.0
 metacommunity = fill(0.0, (landscape_size..., species_richness, generations))
-metacommunity[:, :, findall(trophic_level .< 2), 1] .= 100.0
-metacommunity[:, :, findall(trophic_level .== 2), 50] .= 50.0
-metacommunity[:, :, findall(trophic_level .== 3), 100] .= 10.0
+metacommunity[:, :, findall(trophic_level .< 2), 1] .= 15.0
+metacommunity[:, :, findall(trophic_level .== 2), 50] .= 7.0
+metacommunity[:, :, findall(trophic_level .== 3), 100] .= 1.0
 
 # Run the model
 simulate!(

@@ -36,13 +36,12 @@ axs = [
 for species in axes(metacommunity, 3)
     tl = trophic_level[species]
     scatter!(axs[tl], vec(environment), vec(metacommunity[:, :, species, end]))
-    ylims!(axs[tl], -0.001, 0.001)
 end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
     lines!(axs[4], abund[species, 1:end], color = species_col[species])
-    ylims!(axs[4], -0.001, 0.01)
+    #ylims!(axs[4], -0.001, 0.01)
 end
 
 abund[findall(abund .> 0.0), 1] .= 1.0
