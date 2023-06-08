@@ -1,20 +1,46 @@
-using CairoMakie
 using GLMakie
-using Makie.Colors
-using Plots
+using ColorSchemes
 
-# get global extrema
-extremas = map(extrema, metacommunity)
-global_min = minimum(t->first(t), extremas)
-global_max = maximum(t->last(t), extremas)
-# these limits have to be shared by the maps and the colorbar
-clims = (global_min, global_max)
+species_col = fill("", species_richness,)
 
-anim = @animate for i=1:generations
-   Plots.plot(Plots.heatmap(environment, title="Environment"),
-   Plots.heatmap(metacommunity[:, :, 1, i], title="Plant", clims = clims),
-   Plots.heatmap(metacommunity[:, :, 55, i], title="Herbivore", clims = clims),
-   Plots.heatmap(metacommunity[:, :, 78, i], title="Carnivore", clims = clims),
-   layout=(2,2))
+for i in axes(species_col,1)
+   if trophic_level[i] == 1
+      species_col[i] = "green"
+   elseif trophic_level[i] == 2
+      species_col[i] = "blue"
+   else 
+      species_col[i] = "red"
+   end
 end
-gif(anim, "figures/all_test.gif", fps = 1)
+
+# Some diagnostic plots
+
+fig = Figure()
+axs = [
+    Axis(fig[1, 1],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[1, 2],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[2, 1],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[2, 2],
+    xlabel = "Generation",
+    ylabel = "Abundance"),
+]
+for species in axes(metacommunity, 3)
+    tl = trophic_level[species]
+    scatter!(axs[tl], vec(environment), vec(metacommunity[:, :, species, end]))
+    ylims!(axs[tl], -0.001, 0.001)
+end
+
+abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
+for species in axes(abund, 1)
+    lines!(axs[end], abund[species, 1:end], color = species_col[species])
+    ylims!(axs[end], -0.001, 0.01)
+end
+
+current_figure()
+
