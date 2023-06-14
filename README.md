@@ -2,21 +2,23 @@
 
 ## Community Dynamics Just aren't a Vibe...
 
-When we use the (what is hopefully) a carbon copy of the original Thompson &
-Gonzales model the abundances for species are just weird and seems to be a plant
-safe space as they are the only species to persist. See below:
+When we use the (what is hopefully) a carbon copy of the original T&G model the
+abundances for species are just weird and seems to be a plant safe space as they
+are the only species to persist. See below:
 
 !['normal model'](figures/diagnostics.png)
 
 ### Test 1: Set all but plant-plant interactions to zero
 
-Here all interactions are zero-ed except for plant-plant interactions. Here we
-can see if the root cause of the sus dynamics is because herbivores and
-carnivores are going extinct...
+Here all interactions are zero-ed except for plant-plant interactions. If the
+non-plants don't persist as long then it means that they were previously at
+least getting _some_ sustenance but now none and then star to death (Alexa thats
+so sad play Despacito).
 
 !['only plant-plant'](figures/diagnostics_only_plant-plant.png)
 
-This could be the case... dynamics (shape-wise seem pretty unchanged)
+Dynamics (shape-wise seem pretty unchanged) so they were previously starving to
+death already???
 
 ### Test 2: Lets ramp up the strength of interactions
 
@@ -27,12 +29,18 @@ Lets start by setting the scaling parameter to zero.
 I did this by multiplying the interaction values by (0.33*S) since that should
 neutralise the original division term, in theory...
 
+> Note I did something naughty and (for this test only) made the time between
+> herbivore and carnivore invasion smaller so that carnivores invade while there
+> are still herbivores in the system. No effect
+
 ### Test 3: Set all interactions to zero
 
 One last hail mary before we try and throw parameters at the problem. Lets set
 _ALL_ interactions to zero and see what happens to the plants.
 
 !['no interactions'](figures/diagnostics_no_interactions.png)
+
+Things seem to be pointing to growth maybe?
 
 ### Test 4: The test that should've been the first test
 
@@ -44,7 +52,7 @@ Looking at the source code for T&G some interesting notes.
 - The seem to have an 'upside down trophic structure' in the sense that they
   have 5 'plants', 7 'herbivores', and 11 'carnivores'
 - All intraspecific interactions are set to 0.2 (all trophic levels)
-- Regarding previous it seems they then 'reset' `carnivore` intraspecific
+- Regarding previous it seems they then 'reset' 'carnivore' intraspecific
   interactions to 0.15
 - weight is defines as '1/80*3' and 80 = S (since there should be 80 species)
   BUT when constructing the food web based on the numbers given on the first
@@ -55,11 +63,12 @@ What is life???
 
 ### Test 5: Lets try scaling of 1/80*3
 
-Since this is the scaling factor used lets give it a try...
+Since this (1/80*3) is the scaling factor used lets give it a try...
 
 !['correct scaling param'](figures/diagnostics_correct_scaling.png)
 
-So the abundance numbers 'match' those from T&G script for what thats worth...
+So the interaction strength numbers 'match' those from T&G script for what thats
+worth...
 
 ### Test 6: Set all initial abundances for same time
 
@@ -84,3 +93,5 @@ Lets go with the inverted trophic level but re-introduce gradual invasions.
 !['inverted trophic levels' but make it gradual invasions](figures/diagnostics_inverted_gradual.png)
 
 Nope!
+
+I hate this...
