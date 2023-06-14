@@ -67,7 +67,7 @@ combinations are set to zero.
 
 Interaction strength go FROM ROW, TO COLUMN
 """
-function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level)
+function set_interaction_strength!(interaction_strength::Matrix{Float64}; trophic_level::Vector{Int8})
     plant_plant = Uniform(-0.1, 0.0)
     herb_plant = Uniform(-0.3, 0.0)
     plant_herb = Uniform(0.0, 0.1)
