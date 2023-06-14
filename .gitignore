@@ -29,3 +29,4 @@ Manifest.toml
 # Scrap file for code scribbles and experiments
 scraps.jl
 _debug.jl
+_debug.md
