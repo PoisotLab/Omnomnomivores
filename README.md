@@ -95,3 +95,16 @@ Lets go with the inverted trophic level but re-introduce gradual invasions.
 Nope!
 
 I hate this...
+
+### Test 9: The why tf not option
+
+I'm going to set all dispersal metrics (decay and distance) to zero and see if
+that decided to really mess up the dynamics...
+
+There is after all a trophic-level dependence on the 'dispersal decay'...
+
+> Note I am going to use the 'correctly' scaled interaction values from test 5.
+
+![axe dispersal values](figures/diagnostics_no_dispersal.png)
+
+Blessed be the fruit!
