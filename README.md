@@ -108,3 +108,15 @@ There is after all a trophic-level dependence on the 'dispersal decay'...
 ![axe dispersal values](figures/diagnostics_no_dispersal.png)
 
 Blessed be the fruit!
+
+### Test 10: Lets do without dispersal but keep decay
+
+Since there seems to at least be some 'signal' lets play around with the
+immigrations parameters. In this case we will keep the dispersal decay (which is
+determined by trophic level) but keep dispersal rate constant.
+
+> Note to self I should probably have double checked things regarding dispersal
+> decay in the source code but my brain does not have the current capacity for
+> that.
+
+![yes decay not rate](figures/diagnostics_no_dispersal_yes_decay.png)
