@@ -120,3 +120,34 @@ determined by trophic level) but keep dispersal rate constant.
 > that.
 
 ![yes decay not rate](figures/diagnostics_no_dispersal_yes_decay.png)
+
+## (cracks knuckles) Lets play with dispersal decay (big L)
+
+Since 'removing' dispersal parameters seems to give us 'normal' dynamics it
+seems that at least of the problems rests on its shoulders. So lets have a look
+
+### Test 11: Same dispersal decay for all trophic levels
+
+Let's see if setting the dispersal rate independent of trophic level. For this
+trial I'll use the distribution that we used for plants since it seems the most
+'normal'. One would hope to see the other trophic levels behave somewhat
+normally (i.e. not go completely extinct)...
+
+![no trophic dependent dispersal decay](figures/diagnostics_no_trophic_dispersal.png)
+
+### Test 12: I need to refresh my brain and have a model where we have a dispersal rate (a) but not decay (L)
+
+Basically this gives us a litmus test of i/emigration because setting rate to
+zero zeros both i/emigration. I will use the dispersal rates from the OG
+simulations.
+
+![no decay yes rate](figures/diagnostics_yes_rate_no_decay.png)
+
+Okay yeah I think this implies that dispersal decay is maybe not to blame??
+Since this looks quite similar to the OG simulations? Here OG being test five
+since we are now using the 'correct' scaling...
+
+### Test 13: Resort to the source code
+
+Might still be worth following up on this in the source code to be sure were
+using the correct decay rates for the trophic levels...
