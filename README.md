@@ -1,5 +1,7 @@
 # Omnomnomivores
 
+![I don't even know...](https://giphy.com/clips/alex-anderson-data-nickelback-look-at-this-graph-FtlUfrq3pVZXVNjoxf)
+
 ## Community Dynamics Just aren't a Vibe...
 
 When we use the (what is hopefully) a carbon copy of the original T&G model the
