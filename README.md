@@ -147,7 +147,20 @@ Okay yeah I think this implies that dispersal decay is maybe not to blame??
 Since this looks quite similar to the OG simulations? Here OG being test five
 since we are now using the 'correct' scaling...
 
-### Test 13: Resort to the source code
+### Test 13: Set dispersal rate to 1
+
+By setting the dispersal rate to one (1) it should have no impact on the other
+parameters since it is always multiplied in. Setting it to zero removes both
+immigration and emigration terms.
+
+![neutralise rate](figures/diagnostics_neutral_rate.png)
+
+Okay, yeah all I can really glean from this is that it has to do with
+immigration and emigration rates and how those ratio?? Because if we set both to
+zero (or even decay rate to zero which leads to a de-facto zero) we get the most
+normal looking community dynamics.
+
+### Test 14: Resort to the source code
 
 Might still be worth following up on this in the source code to be sure were
 using the correct decay rates for the trophic levels...
