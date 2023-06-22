@@ -174,3 +174,7 @@ if we make the rate of decay teenier than tiny (0.001) for funsies.
 
 Okay yeah for sure its that there in and out ratio thats been giving us the
 runaround...
+
+> cc to Tim for this gem
+
+![Meme](figures/meme_1.jpg)
