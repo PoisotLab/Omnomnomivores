@@ -1,7 +1,5 @@
 # Omnomnomivores
 
-![Look at this graph](https://media.giphy.com/media/LedVYzRx24nkI/giphy-downsized-large.gif)
-
 ## Community Dynamics Just aren't a Vibe...
 
 When we use the (what is hopefully) a carbon copy of the original T&G model the
