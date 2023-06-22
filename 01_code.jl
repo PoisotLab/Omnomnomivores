@@ -23,7 +23,7 @@ environment = rand(DiamondSquare(), landscape_size) .* species_richness
 
 # Initial values for the species
 set_trophic_levels!(trophic_level)
-set_interaction_strength!(interaction_strength; trophic_level)
+set_interaction_strength!(interaction_strength, trophic_level)
 set_environmental_optimum!(environmental_optimum, environment, trophic_level)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
