@@ -1,6 +1,6 @@
 # Omnomnomivores
 
-![I don't even know...](https://giphy.com/clips/alex-anderson-data-nickelback-look-at-this-graph-FtlUfrq3pVZXVNjoxf)
+![Look at this graph](https://media.giphy.com/media/LedVYzRx24nkI/giphy-downsized-large.gif)
 
 ## Community Dynamics Just aren't a Vibe...
 
