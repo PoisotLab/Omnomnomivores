@@ -164,3 +164,13 @@ normal looking community dynamics.
 
 Might still be worth following up on this in the source code to be sure were
 using the correct decay rates for the trophic levels...
+
+### Test 15: Teenier than tiny decay rate
+
+It seems that we are correct on the side of the maths so lets see what happens
+if we make the rate of decay teenier than tiny (0.001) for funsies.
+
+![tiny rate of decay](figures/diagnostics_tiny_rate.png)
+
+Okay yeah for sure its that there in and out ratio thats been giving us the
+runaround...
