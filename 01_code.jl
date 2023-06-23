@@ -73,12 +73,13 @@ metacommunity[:, :, :, 1] .= metacommunity_burnin[:, :, :, end]
 
 for g in 1:(generations_heating - 1)
 _meta_comm = metacommunity[:, :, :, g:(g + 1)]
+_eopt = set_environmental_optimum!(environmental_optimum, environment_heating[:,:,g+1], trophic_level)
     simulate!(
     _meta_comm,
     dispersal_rate,
     dispersal_decay,
     environment_heating[:,:,g+1],
-    environmental_optimum,
+    _eopt,
     interaction_strength,
     )
 metacommunity[:, :, :, g:(g + 1)] = _meta_comm
