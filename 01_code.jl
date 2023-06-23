@@ -84,3 +84,20 @@ _eopt = set_environmental_optimum!(environmental_optimum, environment_heating[:,
     )
 metacommunity[:, :, :, g:(g + 1)] = _meta_comm
 end
+
+# set up cooling run
+#cooling generations
+generations = 200
+
+metacommunity_cool = fill(0.0, (landscape_size..., species_richness, generations))
+metacommunity_cool[:, :, :, 1] .= metacommunity[:, :, :, 10]
+
+# Run the model
+simulate!(
+    metacommunity_cool,
+    dispersal_rate,
+    dispersal_decay,
+    environment_heating[:,:,10],
+    set_environmental_optimum!(environmental_optimum, environment_heating[:,:,10], trophic_level),
+    interaction_strength,
+)
