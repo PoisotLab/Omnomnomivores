@@ -48,4 +48,8 @@ optimum...
 
 ![heating run 2](figures/diagnostics_h_0.png)
 
-**LIES***
+**LIES**
+
+Lets look at the cooling phase because why not...
+
+![heating run 2](figures/diagnostics_cooling.png)
