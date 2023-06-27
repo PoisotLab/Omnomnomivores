@@ -84,7 +84,7 @@ axs = [
 ]
 for species in axes(metacommunity, 3)
     tl = trophic_level[species]
-    scatter!(axs[tl], vec(environment), vec(metacommunity[:, :, species, end]))
+    scatter!(axs[tl], vec(environment_heating[:,:,end]), vec(metacommunity[:, :, species, end]))
 end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
@@ -123,7 +123,7 @@ axs = [
 ]
 for species in axes(metacommunity_cool, 3)
     tl = trophic_level[species]
-    scatter!(axs[tl], vec(environment), vec(metacommunity[:, :, species, end]))
+    scatter!(axs[tl], vec(environment_heating[:,:,end]), vec(metacommunity[:, :, species, end]))
 end
 
 abund = dropdims(mapslices(sum, metacommunity_cool; dims = (1, 2)); dims = (1, 2))
