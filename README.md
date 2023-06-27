@@ -45,3 +45,7 @@ over a larger interval as opposed to every time step i.e. have a series of mini
 burn ins. However I think the more logical reason is that there is a
 disproportionate effect be the environment when a species is not at its
 optimum...
+
+![heating run 2](figures/diagnostics_h_0.png)
+
+**LIES***
