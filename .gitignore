@@ -28,3 +28,4 @@ Manifest.toml
 
 # Scrap file for code scribbles and experiments
 scraps.jl
+_dubug_burnin.jl
