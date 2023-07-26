@@ -44,10 +44,11 @@ dispersal_rate = zeros(Float64, species_richness)
 
 generations = 200
 
-# For the burn-in we want to keep the landscape uniform so we will use an empty
-# landscape
+# For the burn-in we want to keep the landscape uniform so we will populate the
+# landscape with an environemntal value of 10.0
 
 environment_burnin = zeros(Float64, landscape_size)
+environment_burnin .= 10.0
 
 # Now we can populate the species metadata
 
@@ -74,6 +75,60 @@ simulate!(
     environmental_optimum,
     interaction_strength,
 )
+
+# ### Diagnostics
+#
+# We can compile some visuals to see how the community is changing over time.
+
+## this is for some colour allocation
+species_col = fill("", species_richness,)
+for i in axes(species_col,1)
+   if trophic_level[i] == 1
+      species_col[i] = "green"
+   elseif trophic_level[i] == 2
+      species_col[i] = "blue"
+   else 
+      species_col[i] = "red"
+   end
+end
+
+fig = Figure()
+axs = [
+    Axis(fig[1, 1],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[1, 2],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[1, 3],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[2, 1:3],
+    xlabel = "Generation",
+    ylabel = "Abundance"),
+    Axis(fig[3, 1:3],
+    xlabel = "Generation",
+    ylabel = "Species Richness"),
+]
+for species in axes(metacommunity_burnin, 3)
+    tl = trophic_level[species]
+    GLMakie.scatter!(axs[tl], vec(environment_burnin), vec(metacommunity_burnin[:, :, species, end]))
+end
+
+abund = dropdims(mapslices(sum, metacommunity_burnin; dims = (1, 2)); dims = (1, 2))
+for species in axes(abund, 1)
+    lines!(axs[4], abund[species, 1:end], color = species_col[species])
+end
+
+abund[findall(abund .> 0.0), 1] .= 1.0
+lines!(axs[5], vec(sum(abund[1:40,:], dims = 1)), color = "green", label = "plant")
+lines!(axs[5], vec(sum(abund[41:63,:], dims = 1)), color = "blue", label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end,:], dims = 1)), color = "red", label = "carnivore")
+axislegend()
+
+current_figure()
+
+save("figures/diagnostics_burnin.png", fig)
 
 # ## Community generation
 #
@@ -115,6 +170,8 @@ end
 # **TODO** to make the environmental change a bit more gradual we can log
 # transform the values
 
+
+
 # we also need to reassign the envirnomental optima of all species (recall these
 # were optimised to the uniform landscape)
 
@@ -141,3 +198,46 @@ _eopt = set_environmental_optimum!(environmental_optimum, environment_heating[:,
     )
 metacommunity[:, :, :, g:(g + 1)] = _meta_comm
 end
+
+# ### Diagnostics
+#
+# We can repeat the same series of plots we used to look at the burn-in
+# community.
+
+fig = Figure()
+axs = [
+    Axis(fig[1, 1],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[1, 2],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[1, 3],
+    xlabel = "Environment value",
+    ylabel = "Abundance"),
+    Axis(fig[2, 1:3],
+    xlabel = "Generation",
+    ylabel = "Abundance"),
+    Axis(fig[3, 1:3],
+    xlabel = "Generation",
+    ylabel = "Species Richness"),
+]
+for species in axes(metacommunity, 3)
+    tl = trophic_level[species]
+    GLMakie.scatter!(axs[tl], vec(environment_heating[:,:,end]), vec(metacommunity[:, :, species, end]))
+end
+
+abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
+for species in axes(abund, 1)
+    lines!(axs[4], abund[species, 1:end], color = species_col[species])
+end
+
+abund[findall(abund .> 0.0), 1] .= 1.0
+lines!(axs[5], vec(sum(abund[1:40,:], dims = 1)), color = "green", label = "plant")
+lines!(axs[5], vec(sum(abund[41:63,:], dims = 1)), color = "blue", label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end,:], dims = 1)), color = "red", label = "carnivore")
+axislegend()
+
+current_figure()
+
+save("figures/diagnostics.png", fig)
