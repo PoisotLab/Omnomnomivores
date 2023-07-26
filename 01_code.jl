@@ -58,7 +58,7 @@ set_environmental_optimum!(environmental_optimum, environment_burnin, trophic_le
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-# Now we can create the matrix that will store each timedtamp of our burnin
+# Now we can create the matrix that will store each timedtamp of our burn-in
 # community. We will also create an initial abundance for all species for the
 # first timestamp.
 
@@ -129,6 +129,9 @@ axislegend()
 current_figure()
 
 save("figures/diagnostics_burnin.png", fig)
+
+# The good news here is that we can see some sort of population dynamics
+# emerging when we look at the abundance curves.
 
 # ## Community generation
 #
@@ -241,3 +244,6 @@ axislegend()
 current_figure()
 
 save("figures/diagnostics.png", fig)
+
+# This is good - we can see different species peaking at different environmental
+# optima as well as a few species going extinct.
