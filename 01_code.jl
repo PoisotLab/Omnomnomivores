@@ -1,18 +1,36 @@
+# # Step 1 - creating communities in the environment
+#
+# This step is actually two steps since we will first be creating a 'burn-in'
+# phase where the landscape is uniform for a set number of generations and then
+# we will incrementally begin to heat/cool the different environmental patches
+# until we reach the 'final state'. 
+
+# ## Dependencies
+
+# Nothing fancy
+
 using Distributions
 using NeutralLandscapes
-using SpatialBoundaries
 using Random
 using ProgressMeter
+
+# ## Functionality
+#
+# Load the functions we need from the lib folder
+
+include("lib/01_species_creation.jl")
+include("lib/02_model_internals.jl")
+
+# ## Initiation
+#
+# First we will specify the size of our landscape as well as the community 
 
 landscape_size = (20, 20)
 species_richness = 80
 
-# Load the functions we need from the lib folder
-include("lib/01_species_creation.jl")
-include("lib/02_model_internals.jl")
-
-# Prepare burn in run
-generations = 200
+# Now we can begin to create the species metadata which we will populate in a
+# bit(you can see a more detailed breakdown of these in
+# `lib/01_species_creation.jl`)
 
 interaction_strength = zeros(Float64, (species_richness, species_richness))
 trophic_level = zeros(Int8, species_richness)
@@ -20,21 +38,34 @@ environmental_optimum = zeros(Float64, species_richness)
 dispersal_decay = zeros(Float64, species_richness)
 dispersal_rate = zeros(Float64, species_richness)
 
-environment_burnin = zeros(Float64, landscape_size)
-environment_burnin .= 10.0
+# ## Burn-in
+#
+# Let's specify the number of burn-in generations
 
-# Initial values for the species
+generations = 200
+
+# For the burn-in we want to keep the landscape uniform so we will use an empty
+# landscape
+
+environment_burnin = zeros(Float64, landscape_size)
+
+# Now we can populate the species metadata
+
 set_trophic_levels!(trophic_level)
 set_interaction_strength!(interaction_strength; trophic_level)
 set_environmental_optimum!(environmental_optimum, environment_burnin, trophic_level)
 set_dispersal_rate!(dispersal_rate)
 set_dispersal_decay!(dispersal_decay; trophic_level)
 
-# Set an initial metacommunity object, only the first timestep is set to 10.0
+# Now we can create the matrix that will store each timedtamp of our burnin
+# community. We will also create an initial abundance for all species for the
+# first timestamp.
+
 metacommunity_burnin = fill(0.0, (landscape_size..., species_richness, generations))
 metacommunity_burnin[:, :, :, 1] .= 0.1
 
-# Run the model
+# Now we can simply run the model
+
 simulate!(
     metacommunity_burnin,
     dispersal_rate,
@@ -44,32 +75,58 @@ simulate!(
     interaction_strength,
 )
 
-# set up for 'heating' run
+# ## Community generation
+#
+# Now that we have created a somewhat 'stocahstic' community it is time to
+# introduce some environmental variability - we will do this using
+# `NeutralLandscapes.jl`. But before we do that lets specify our 'heating'
+# generations time. 
 
-# set heating generation timestep
+# > Note because of how the simulation function is currently set up we will be
+# > setting two generation time variables. `generations_heating` is the actual
+# > number of generations and 'generations' is simly to make the simulate!
+# > function go brrr.
+
 generations_heating = 200
 generations = 2
 
-# create 'ramped' environmental change landscape
+# becuase we are 'ramping' the environment (i.e. simulating a gradual change) we
+# are creating a matrix that will keep each environmental layer so we can sample
+# it for each simulation run. 
+
 environment_heating = fill(0.0, (landscape_size..., generations_heating))
+
+# then we can set the inital and final environemntal state
+
 environment_heating[:,:,1] = environment_burnin
 environment_heating[:,:,end] = rand(DiamondSquare(), landscape_size) .* species_richness
-# final - initial environment
+
+# now we can calculate the magnitude of change for each timestep to have the
+# landscape reach its 'final state'
+
 heating_step = (environment_heating[:,:,end] - environment_burnin)./generations_heating
-# add said quotient to each patch sequentially
+
+# now we can sequentially add this value to each intermediate landscape state
+
 for e in 2:(generations_heating - 1)
     environment_heating[:,:,e] = environment_heating[:,:,e-1] + heating_step
 end
 
-# re-assign new environmental optimum
+# **TODO** to make the environmental change a bit more gradual we can log
+# transform the values
+
+# we also need to reassign the envirnomental optima of all species (recall these
+# were optimised to the uniform landscape)
+
 set_environmental_optimum!(environmental_optimum, environment_heating[:,:,end], trophic_level)
 
-# create new metacommunity matrix
+# create the new metacommuity matrix and assign the first timestep as the
+# ubandance values of the final timestep of the burnin community.
+
 metacommunity = fill(0.0, (landscape_size..., species_richness, generations_heating))
-# assign T1 as final community from burnin
 metacommunity[:, :, :, 1] .= metacommunity_burnin[:, :, :, end]
 
-# run simulations
+# run the simulations
 
 for g in 1:(generations_heating - 1)
 _meta_comm = metacommunity[:, :, :, g:(g + 1)]
@@ -84,20 +141,3 @@ _eopt = set_environmental_optimum!(environmental_optimum, environment_heating[:,
     )
 metacommunity[:, :, :, g:(g + 1)] = _meta_comm
 end
-
-# set up cooling run
-#cooling generations
-generations = 200
-
-metacommunity_cool = fill(0.0, (landscape_size..., species_richness, generations))
-metacommunity_cool[:, :, :, 1] .= metacommunity[:, :, :, 10]
-
-# Run the model
-simulate!(
-    metacommunity_cool,
-    dispersal_rate,
-    dispersal_decay,
-    environment_heating[:,:,10],
-    set_environmental_optimum!(environmental_optimum, environment_heating[:,:,10], trophic_level),
-    interaction_strength,
-)
