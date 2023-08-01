@@ -164,16 +164,17 @@ environment_heating[:,:,end] = rand(DiamondSquare(), landscape_size) .* species_
 
 heating_step = (environment_heating[:,:,end] - environment_burnin)./generations_heating
 
-# now we can sequentially add this value to each intermediate landscape state
+# now we can sequentially add this value to each intermediate landscape state.
+# To make the environmental change a bit more gradual we can add a logisitc
+# 'tweak' to the environmental change.
 
 for e in 2:(generations_heating - 1)
-    environment_heating[:,:,e] = environment_heating[:,:,e-1] + heating_step
+    environment_heating[:,:,e] = (environment_heating[:,:,e-1] + heating_step)
 end
 
-# **TODO** to make the environmental change a bit more gradual we can log
-# transform the values
-
-
+for i in 1:generations_heating
+    environment_heating[:,:,i] = environment_heating[:,:,i] * (1 / (1 + exp(-(i/generations_heating))))
+end
 
 # we also need to reassign the envirnomental optima of all species (recall these
 # were optimised to the uniform landscape)
