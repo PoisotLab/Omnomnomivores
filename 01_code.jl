@@ -148,7 +148,7 @@ save("figures/diagnostics_burnin.png", fig)
 generations_heating = 200
 generations = 2
 
-# becuase we are 'ramping' the environment (i.e. simulating a gradual change) we
+# because we are 'ramping' the environment (i.e. simulating a gradual change) we
 # are creating a matrix that will keep each environmental layer so we can sample
 # it for each simulation run. 
 
@@ -182,7 +182,7 @@ end
 set_environmental_optimum!(environmental_optimum, environment_heating[:,:,end], trophic_level)
 
 # create the new metacommuity matrix and assign the first timestep as the
-# ubandance values of the final timestep of the burnin community.
+# abundance values of the final timestep of the burnin community.
 
 metacommunity = fill(0.0, (landscape_size..., species_richness, generations_heating))
 metacommunity[:, :, :, 1] .= metacommunity_burnin[:, :, :, end]
@@ -247,4 +247,5 @@ current_figure()
 save("figures/diagnostics.png", fig)
 
 # This is good - we can see different species peaking at different environmental
-# optima as well as a few species going extinct.
+# optima as well as a few species going extinct. Oh and somewhat stable community
+# dynamics I guess...
