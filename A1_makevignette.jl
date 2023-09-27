@@ -6,14 +6,14 @@ vignetteconfig = Dict(
     "repo_root_url" => "https://github.com/PoisotLab/Omnomnomivores",
     "codefence" => Pair("````julia", "````"),
     "flavor" => Literate.FranklinFlavor(),
-    "credit" => false
+    "credit" => false,
 )
 
 nbconfig = Dict(
-    "execute" => false
+    "execute" => false,
 )
 
 for corefile in corefiles
-    Literate.markdown(corefile, "vignettes"; config=vignetteconfig)
-    Literate.notebook(corefile, "vignettes"; config=nbconfig)
+    Literate.markdown(corefile, "vignettes"; config = vignetteconfig)
+    Literate.notebook(corefile, "vignettes"; config = nbconfig)
 end

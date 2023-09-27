@@ -81,49 +81,53 @@ simulate!(
 # We can compile some visuals to see how the community is changing over time.
 
 ## this is for some colour allocation
-species_col = fill("", species_richness,)
-for i in axes(species_col,1)
-   if trophic_level[i] == 1
-      species_col[i] = "green"
-   elseif trophic_level[i] == 2
-      species_col[i] = "blue"
-   else 
-      species_col[i] = "red"
-   end
+species_col = fill("", species_richness)
+for i in axes(species_col, 1)
+    if trophic_level[i] == 1
+        species_col[i] = "green"
+    elseif trophic_level[i] == 2
+        species_col[i] = "blue"
+    else
+        species_col[i] = "red"
+    end
 end
 
 fig = Figure()
 axs = [
-    Axis(fig[1, 1],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[1, 2],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[1, 3],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[2, 1:3],
-    xlabel = "Generation",
-    ylabel = "Abundance"),
-    Axis(fig[3, 1:3],
-    xlabel = "Generation",
-    ylabel = "Species Richness"),
+    Axis(fig[1, 1];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[1, 2];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[1, 3];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[2, 1:3];
+        xlabel = "Generation",
+        ylabel = "Abundance"),
+    Axis(fig[3, 1:3];
+        xlabel = "Generation",
+        ylabel = "Species Richness"),
 ]
 for species in axes(metacommunity_burnin, 3)
     tl = trophic_level[species]
-    GLMakie.scatter!(axs[tl], vec(environment_burnin), vec(metacommunity_burnin[:, :, species, end]))
+    GLMakie.scatter!(
+        axs[tl],
+        vec(environment_burnin),
+        vec(metacommunity_burnin[:, :, species, end]),
+    )
 end
 
 abund = dropdims(mapslices(sum, metacommunity_burnin; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
-    lines!(axs[4], abund[species, 1:end], color = species_col[species])
+    lines!(axs[4], abund[species, 1:end]; color = species_col[species])
 end
 
 abund[findall(abund .> 0.0), 1] .= 1.0
-lines!(axs[5], vec(sum(abund[1:40,:], dims = 1)), color = "green", label = "plant")
-lines!(axs[5], vec(sum(abund[41:63,:], dims = 1)), color = "blue", label = "herbivore")
-lines!(axs[5], vec(sum(abund[64:end,:], dims = 1)), color = "red", label = "carnivore")
+lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = "green", label = "plant")
+lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = "blue", label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = "red", label = "carnivore")
 axislegend()
 
 current_figure()
@@ -156,30 +160,35 @@ environment_heating = fill(0.0, (landscape_size..., generations_heating))
 
 # then we can set the inital and final environemntal state
 
-environment_heating[:,:,1] = environment_burnin
-environment_heating[:,:,end] = rand(DiamondSquare(), landscape_size) .* species_richness
+environment_heating[:, :, 1] = environment_burnin
+environment_heating[:, :, end] = rand(DiamondSquare(), landscape_size) .* species_richness
 
 # now we can calculate the magnitude of change for each timestep to have the
 # landscape reach its 'final state'
 
-heating_step = (environment_heating[:,:,end] - environment_burnin)./generations_heating
+heating_step = (environment_heating[:, :, end] - environment_burnin) ./ generations_heating
 
 # now we can sequentially add this value to each intermediate landscape state.
 # To make the environmental change a bit more gradual we can add a logisitc
 # 'tweak' to the environmental change.
 
 for e in 2:(generations_heating - 1)
-    environment_heating[:,:,e] = (environment_heating[:,:,e-1] + heating_step)
+    environment_heating[:, :, e] = (environment_heating[:, :, e - 1] + heating_step)
 end
 
 for i in 1:generations_heating
-    environment_heating[:,:,i] = environment_heating[:,:,i] * (1 / (1 + exp(-(i/generations_heating))))
+    environment_heating[:, :, i] =
+        environment_heating[:, :, i] * (1 / (1 + exp(-(i / generations_heating))))
 end
 
 # we also need to reassign the envirnomental optima of all species (recall these
 # were optimised to the uniform landscape)
 
-set_environmental_optimum!(environmental_optimum, environment_heating[:,:,end], trophic_level)
+set_environmental_optimum!(
+    environmental_optimum,
+    environment_heating[:, :, end],
+    trophic_level,
+)
 
 # create the new metacommuity matrix and assign the first timestep as the
 # abundance values of the final timestep of the burnin community.
@@ -190,17 +199,21 @@ metacommunity[:, :, :, 1] .= metacommunity_burnin[:, :, :, end]
 # run the simulations
 
 for g in 1:(generations_heating - 1)
-_meta_comm = metacommunity[:, :, :, g:(g + 1)]
-_eopt = set_environmental_optimum!(environmental_optimum, environment_heating[:,:,g+1], trophic_level)
-    simulate!(
-    _meta_comm,
-    dispersal_rate,
-    dispersal_decay,
-    environment_heating[:,:,g+1],
-    _eopt,
-    interaction_strength,
+    _meta_comm = metacommunity[:, :, :, g:(g + 1)]
+    _eopt = set_environmental_optimum!(
+        environmental_optimum,
+        environment_heating[:, :, g + 1],
+        trophic_level,
     )
-metacommunity[:, :, :, g:(g + 1)] = _meta_comm
+    simulate!(
+        _meta_comm,
+        dispersal_rate,
+        dispersal_decay,
+        environment_heating[:, :, g + 1],
+        _eopt,
+        interaction_strength,
+    )
+    metacommunity[:, :, :, g:(g + 1)] = _meta_comm
 end
 
 # ### Diagnostics
@@ -210,36 +223,40 @@ end
 
 fig = Figure()
 axs = [
-    Axis(fig[1, 1],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[1, 2],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[1, 3],
-    xlabel = "Environment value",
-    ylabel = "Abundance"),
-    Axis(fig[2, 1:3],
-    xlabel = "Generation",
-    ylabel = "Abundance"),
-    Axis(fig[3, 1:3],
-    xlabel = "Generation",
-    ylabel = "Species Richness"),
+    Axis(fig[1, 1];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[1, 2];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[1, 3];
+        xlabel = "Environment value",
+        ylabel = "Abundance"),
+    Axis(fig[2, 1:3];
+        xlabel = "Generation",
+        ylabel = "Abundance"),
+    Axis(fig[3, 1:3];
+        xlabel = "Generation",
+        ylabel = "Species Richness"),
 ]
 for species in axes(metacommunity, 3)
     tl = trophic_level[species]
-    GLMakie.scatter!(axs[tl], vec(environment_heating[:,:,end]), vec(metacommunity[:, :, species, end]))
+    GLMakie.scatter!(
+        axs[tl],
+        vec(environment_heating[:, :, end]),
+        vec(metacommunity[:, :, species, end]),
+    )
 end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
-    lines!(axs[4], abund[species, 1:end], color = species_col[species])
+    lines!(axs[4], abund[species, 1:end]; color = species_col[species])
 end
 
 abund[findall(abund .> 0.0), 1] .= 1.0
-lines!(axs[5], vec(sum(abund[1:40,:], dims = 1)), color = "green", label = "plant")
-lines!(axs[5], vec(sum(abund[41:63,:], dims = 1)), color = "blue", label = "herbivore")
-lines!(axs[5], vec(sum(abund[64:end,:], dims = 1)), color = "red", label = "carnivore")
+lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = "green", label = "plant")
+lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = "blue", label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = "red", label = "carnivore")
 axislegend()
 
 current_figure()
