@@ -93,6 +93,7 @@ axs = [
     Axis(fig[2, 3];
         title = "Connectance Boundaries"),
 ]
+#colsize!(fig.layout, 1, Aspect(1, 1))
 
 heatmap!(axs[1], environment_heating[:, :, end])
 heatmap!(axs[2], species_richness)
