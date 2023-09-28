@@ -149,7 +149,7 @@ save("figures/diagnostics_burnin.png", fig)
 # > number of generations and 'generations' is simly to make the simulate!
 # > function go brrr.
 
-generations_heating = 200
+generations_heating = 500
 generations = 2
 
 # because we are 'ramping' the environment (i.e. simulating a gradual change) we
