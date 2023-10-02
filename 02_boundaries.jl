@@ -15,8 +15,8 @@ using SpeciesDistributionToolkit
 
 # have matrix that is the netwrok matrix for each cell, so 80X80 for the 20x20
 
-interaction_networks =
-    fill(zeros(Bool, (species_richness, species_richness)), (landscape_size))
+N = zeros(Bool, (species_richness, species_richness))
+interaction_networks = [copy(N) for x in 1:first(landscape_size), y in 1:last(landscape_size)]
 
 # make interaction netwrok based on interaction strength as well as abundance
 # (this is binary)
