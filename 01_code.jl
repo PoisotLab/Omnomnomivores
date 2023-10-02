@@ -10,6 +10,7 @@
 # Nothing fancy
 
 using Distributions
+using CairoMakie
 using NeutralLandscapes
 using Random
 using ProgressMeter
@@ -266,3 +267,4 @@ save("figures/diagnostics.png", fig)
 # This is good - we can see different species peaking at different environmental
 # optima as well as a few species going extinct. Oh and somewhat stable community
 # dynamics I guess...
+

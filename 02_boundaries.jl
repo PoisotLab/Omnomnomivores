@@ -21,13 +21,14 @@ interaction_networks =
 # make interaction netwrok based on interaction strength as well as abundance
 # (this is binary)
 
-for x in axes(interaction_networks, 1)
-    for y in axes(interaction_networks, 2)
-        for i in axes(interaction_strength, 1)
-            for j in axes(interaction_strength, 2)
-                if interaction_strength[i, j] !=0 && metacommunity[x, y, i, end] > 0 &&
-                   metacommunity[x, y, j, end] > 0
-                    interaction_networks[x, y][i, j] = 1
+for i in axes(interaction_strength, 1)
+    for j in axes(interaction_strength, 2)
+        if !iszero(interaction_strength[i,j])
+            for x in axes(interaction_networks, 1)
+                for y in axes(interaction_networks, 2)
+                    if (metacommunity[x, y, i, end] > 0) && (metacommunity[x, y, j, end] > 0)
+                        interaction_networks[x, y][i, j] = 1
+                    end
                 end
             end
         end
