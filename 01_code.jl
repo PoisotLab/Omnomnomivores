@@ -78,7 +78,10 @@ simulate!(
 )
 
 # ### Diagnostics
-#
+
+using CairoMakie
+using Makie.Colors
+
 # We can compile some visuals to see how the community is changing over time.
 
 ## this is for some colour allocation
@@ -113,7 +116,7 @@ axs = [
 ]
 for species in axes(metacommunity_burnin, 3)
     tl = trophic_level[species]
-    GLMakie.scatter!(
+    scatter!(
         axs[tl],
         vec(environment_burnin),
         vec(metacommunity_burnin[:, :, species, end]),
@@ -242,7 +245,7 @@ axs = [
 ]
 for species in axes(metacommunity, 3)
     tl = trophic_level[species]
-    GLMakie.scatter!(
+    scatter!(
         axs[tl],
         vec(environment_heating[:, :, end]),
         vec(metacommunity[:, :, species, end]),
