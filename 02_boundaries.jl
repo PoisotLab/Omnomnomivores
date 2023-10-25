@@ -66,15 +66,26 @@ end
 # lets concatinate the three variable to make looping through them easier
 
 L = [environment_heating[:, :, end], species_richness, network_measure]
+rates = fill(zeros(Float16, (2,2)), length(L))
+directions = fill(zeros(Float16, (2,2)), length(L))
 candidate_boundaries = fill(zeros(Float16, (2,2)), length(L))
 
 for i in 1:3
     wombled_layers = wombling(L[i])
+    rates[i] = wombled_layers.m
+    directions[i] = wombled_layers.θ
+
+    # calculate boundaries
     rate, direction = SimpleSDMPredictor(wombled_layers)
     b = similar(rate)
     b.grid[boundaries(wombled_layers, 0.1; ignorezero = true)] .= 1.0
     candidate_boundaries[i] = b.grid
-    
+
+    # only keep upper (0.95) and lower (0.05) quantiles
+    quants = quantile(rates[i], [0.05, 0.95])
+    # we will replace non quantile values with zero
+    rates[i][findall(t ->  quants[1] < t < quants[2], rates[i])] .= 0
+   
 end
 
 # visuals
@@ -88,20 +99,29 @@ axs = [
     Axis(fig[1, 3];
         title = "Connectance"),
     Axis(fig[2, 1];
-        title = "Environental Boundaries"),
+        title = ""),
     Axis(fig[2, 2];
-        title = "Richness Boundaries"),
+        title = "Rate of Change"),
     Axis(fig[2, 3];
-        title = "Connectance Boundaries"),
+        title = ""),
+    Axis(fig[3, 1];
+        title = ""),
+    Axis(fig[3, 2];
+        title = "Direction of Change"),
+    Axis(fig[3, 3];
+        title = ""),
 ]
 #colsize!(fig.layout, 1, Aspect(1, 1))
 
 heatmap!(axs[1], environment_heating[:, :, end])
 heatmap!(axs[2], species_richness)
 heatmap!(axs[3], network_measure)
-heatmap!(axs[4], candidate_boundaries[1], colormap=[:transparent, :green])
-heatmap!(axs[5], candidate_boundaries[2], colormap=[:transparent, :green])
-heatmap!(axs[6], candidate_boundaries[3], colormap=[:transparent, :green])
+heatmap!(axs[4], rates[1], colormap=[:transparent, :green])
+heatmap!(axs[5], rates[2], colormap=[:transparent, :green])
+heatmap!(axs[6], rates[3], colormap=[:transparent, :green])
+heatmap!(axs[7], directions[1], colormap=:romaO, clim=(0., 360.))
+heatmap!(axs[8], directions[2], colormap=:romaO, clim=(0., 360.))
+heatmap!(axs[9], directions[3], colormap=:romaO, clim=(0., 360.))
 
 current_figure()
 save("figures/heatmaps.png", fig)
