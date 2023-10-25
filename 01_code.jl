@@ -23,7 +23,9 @@ include("lib/01_species_creation.jl")
 include("lib/02_model_internals.jl")
 
 # ## Initiation
-#
+
+Random.seed!(66)
+
 # First we will specify the size of our landscape as well as the community 
 
 landscape_size = (20, 20)
