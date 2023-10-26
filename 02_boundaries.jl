@@ -82,9 +82,10 @@ for i in 1:3
     candidate_boundaries[i] = b.grid
 
     # only keep upper (0.95) and lower (0.05) quantiles
-    quants = quantile(rates[i], [0.05, 0.95])
+    quants = quantile(rates[i], [0.05, 0.90])
     # we will replace non quantile values with zero
-    rates[i][findall(t ->  quants[1] < t < quants[2], rates[i])] .= 0
+    #rates[i][findall(t ->  quants[1] < t < quants[2], rates[i])] .= 0
+    rates[i][findall(t ->  t < quants[2], rates[i])] .= 0
    
 end
 
@@ -116,12 +117,12 @@ axs = [
 heatmap!(axs[1], environment_heating[:, :, end])
 heatmap!(axs[2], species_richness)
 heatmap!(axs[3], network_measure)
-heatmap!(axs[4], rates[1], colormap=[:transparent, :green])
-heatmap!(axs[5], rates[2], colormap=[:transparent, :green])
-heatmap!(axs[6], rates[3], colormap=[:transparent, :green])
-heatmap!(axs[7], directions[1], colormap=:romaO, clim=(0., 360.))
-heatmap!(axs[8], directions[2], colormap=:romaO, clim=(0., 360.))
-heatmap!(axs[9], directions[3], colormap=:romaO, clim=(0., 360.))
+heatmap!(axs[4], rates[1], colormap=[:transparent, :green], colorrange=(minimum(rates[1]), maximum(rates[1])))
+heatmap!(axs[5], rates[2], colormap=[:transparent, :green], colorrange=(minimum(rates[2]), maximum(rates[2])))
+heatmap!(axs[6], rates[3], colormap=[:transparent, :green], colorrange=(minimum(rates[3]), maximum(rates[3])))
+heatmap!(axs[7], directions[1], colormap=:romaO, colorrange=(0., 360.))
+heatmap!(axs[8], directions[2], colormap=:romaO, colorrange=(0., 360.))
+heatmap!(axs[9], directions[3], colormap=:romaO, colorrange=(0., 360.))
 
 current_figure()
 save("figures/heatmaps.png", fig)
