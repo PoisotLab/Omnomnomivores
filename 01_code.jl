@@ -175,67 +175,36 @@ for i in eachindex(c)
     landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size)
 end
 
-
-
-environment_heating = fill(0.0, (landscape_size..., generations_heating))
-
-
-# then we can set the inital and final environemntal state
-
-environment_heating[:, :, 1] = environment_burnin
-environment_heating[:, :, end] = rand(DiamondSquare(), landscape_size) .* species_richness
-
-# now we can calculate the magnitude of change for each timestep to have the
-# landscape reach its 'final state'
-
-heating_step = (environment_heating[:, :, end] - environment_burnin) ./ generations_heating
-
-# now we can sequentially add this value to each intermediate landscape state.
-# To make the environmental change a bit more gradual we can add a logisitc
-# 'tweak' to the environmental change.
-
-for e in 2:(generations_heating - 1)
-    environment_heating[:, :, e] = (environment_heating[:, :, e - 1] + heating_step)
-end
-
-for i in 1:generations_heating
-    environment_heating[:, :, i] =
-        environment_heating[:, :, i] * (1 / (1 + exp(-(i / generations_heating))))
-end
-
-# we also need to reassign the envirnomental optima of all species (recall these
-# were optimised to the uniform landscape)
-
-set_environmental_optimum!(
-    environmental_optimum,
-    environment_heating[:, :, end],
-    trophic_level,
-)
-
 # create the new metacommuity matrix and assign the first timestep as the
 # abundance values of the final timestep of the burnin community.
 
-metacommunity = fill(0.0, (landscape_size..., species_richness, generations_heating))
-metacommunity[:, :, :, 1] .= metacommunity_burnin[:, :, :, end]
+metacommunity = fill(0.0, (landscape_size..., species_richness, generations_heating, length(c)));
+metacommunity[:, :, :, 1, :] .= metacommunity_burnin[:, :, :, end];
 
-# run the simulations
+# we can now run the simulations for the different landscapes
 
-for g in 1:(generations_heating - 1)
-    _meta_comm = metacommunity[:, :, :, g:(g + 1)]
-    _eopt = set_environmental_optimum!(
+for i in eachindex(c)
+    
+    # first we need the environmental optimum to be reset
+    set_environmental_optimum!(
         environmental_optimum,
-        environment_heating[:, :, g + 1],
+        landscape_connectivity[:, :, i],
         trophic_level,
     )
-    simulate!(
-        _meta_comm,
-        dispersal_rate,
-        dispersal_decay,
-        environment_heating[:, :, g + 1],
-        _eopt,
-        interaction_strength,
-    )
-    metacommunity[:, :, :, g:(g + 1)] = _meta_comm
+
+    #run the simulation
+    for g in 1:(generations_heating - 1)
+        _meta_comm = metacommunity[:, :, :, g:(g + 1), i]
+        simulate!(
+            _meta_comm,
+            dispersal_rate,
+            dispersal_decay,
+            landscape_connectivity[:, :, i],
+            environmental_optimum,
+            interaction_strength,
+        )
+        metacommunity[:, :, :, g:(g + 1), i] = _meta_comm
+    end   
 end
 
 # ### Diagnostics
@@ -265,20 +234,20 @@ for species in axes(metacommunity, 3)
     tl = trophic_level[species]
     scatter!(
         axs[tl],
-        vec(environment_heating[:, :, end]),
-        vec(metacommunity[:, :, species, end]),
+        vec(landscape_connectivity[:, :, 1]),
+        vec(metacommunity[:, :, species, end, 1]),
     )
 end
 
-abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
+abund = dropdims(mapslices(sum, metacommunity[:,:,:,:,1]; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
     lines!(axs[4], abund[species, 1:end]; color = species_col[species])
 end
 
 abund[findall(abund .> 0.0), 1] .= 1.0
-lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = "green", label = "plant")
-lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = "blue", label = "herbivore")
-lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = "red", label = "carnivore")
+lines!(axs[5], vec(sum(abund[1:40, :, 1]; dims = 1)); color = "green", label = "plant")
+lines!(axs[5], vec(sum(abund[41:63, :, 1]; dims = 1)); color = "blue", label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end, :, 1]; dims = 1)); color = "red", label = "carnivore")
 axislegend()
 
 current_figure()
