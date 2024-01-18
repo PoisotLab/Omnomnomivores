@@ -152,7 +152,7 @@ save("figures/diagnostics_burnin.png", fig)
 
 # > Note because of how the simulation function is currently set up we will be
 # > setting two generation time variables. `generations_heating` is the actual
-# > number of generations and 'generations' is simly to make the simulate!
+# > number of generations and 'generations' is simply to make the simulate!
 # > function go brrr.
 
 generations_heating = 500
@@ -162,7 +162,23 @@ generations = 2
 # are creating a matrix that will keep each environmental layer so we can sample
 # it for each simulation run. 
 
+# but we also want to create landscapes with varying spatial-auto correlation so
+# lets also create those
+
+# specify connectivity values
+c = [0, 0.5, 0.99]
+# create empty landscape matrix
+landscape_connectivity = zeros(Float64, (landscape_size..., length(c)))
+
+# populate with environmental values
+for i in eachindex(c)
+    landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size)
+end
+
+
+
 environment_heating = fill(0.0, (landscape_size..., generations_heating))
+
 
 # then we can set the inital and final environemntal state
 
