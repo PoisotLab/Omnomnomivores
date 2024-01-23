@@ -234,12 +234,12 @@ for species in axes(metacommunity, 3)
     tl = trophic_level[species]
     scatter!(
         axs[tl],
-        vec(landscape_connectivity[:, :, 1]),
+        vec(landscape_connectivity[:, :, 2]),
         vec(metacommunity[:, :, species, end, 1]),
     )
 end
 
-abund = dropdims(mapslices(sum, metacommunity[:,:,:,:,1]; dims = (1, 2)); dims = (1, 2))
+abund = dropdims(mapslices(sum, metacommunity[:,:,:,:,2]; dims = (1, 2)); dims = (1, 2))
 for species in axes(abund, 1)
     lines!(axs[4], abund[species, 1:end]; color = species_col[species])
 end
