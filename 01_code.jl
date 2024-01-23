@@ -172,7 +172,7 @@ landscape_connectivity = zeros(Float64, (landscape_size..., length(c)))
 
 # populate with environmental values
 for i in eachindex(c)
-    landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size)
+    landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size) .* species_richness
 end
 
 # create the new metacommuity matrix and assign the first timestep as the
