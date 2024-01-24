@@ -11,17 +11,17 @@ using SpeciesDistributionToolkit
 
 # ## Step 2 - Create some Networks
 
-# have matrix that is the netwrok matrix for each cell, so 80X80 for the 20x20
+# have matrix that is the network matrix for each cell, so 80X80 for the 20x20
 
 N = zeros(Bool, (species_richness, species_richness))
-interaction_networks = [copy(N) for x in 1:first(landscape_size), y in 1:last(landscape_size)]
+interaction_networks = [deepcopy(N) for x in 1:first(landscape_size), y in 1:last(landscape_size)]
 
 # lets make this one landscape network matrix into an array for each level of
 # landscpae connectivity
 
 landscape_networks = [deepcopy(interaction_networks) for x in eachindex(c)]
 
-# make interaction netwrok based on interaction strength as well as abundance
+# make interaction network based on interaction strength as well as abundance
 # (this is binary)
 
 for k in eachindex(c)
@@ -40,20 +40,34 @@ for k in eachindex(c)
     end
 end
 
+# species richness
+
+metacommunity2 = metacommunity[:,:,:,end,:]
+metacommunity2[findall(metacommunity[:,:,:,end,:] .> 0.0), 1] .= 1
+
+richness_landscape = fill(0.0, (landscape_size..., length(c)))
+
+for k in eachindex(c) 
+    for x in axes(interaction_networks, 1)
+        for y in axes(interaction_networks, 2)
+            richness_landscape[x,y,k] = sum(vec(metacommunity2[x,y,:,k]))
+        end
+    end
+end
+
 # lets calculate the connectance for each landscape patch as a 'network measure'
 
-# new matrix to store netwrok measure
-network_measure = fill(zeros((landscape_size)), length(c))
+# new matrix to store network measure
+network_measure = fill(0.0, (landscape_size..., length(c)))
 
 for k in eachindex(c)
     for x in axes(interaction_networks, 1)
         for y in axes(interaction_networks, 2)
             N = UnipartiteNetwork(landscape_networks[k][x,y])
-            network_measure[k][x,y] = connectance(simplify(N))
+            network_measure[x,y,k] = connectance(simplify(N))
         end
     end
 end
-
 
 # ## Step 1 - Boundary time
 
@@ -64,7 +78,7 @@ directions = fill(zeros((2,2)), length(c))
 candidate_boundaries = fill(zeros((2,2)), length(c))
 
 for i in eachindex(c)
-    wombled_layers = wombling(network_measure[i])
+    wombled_layers = wombling(network_measure[:,:,i])
     rates[i] = wombled_layers.m
     directions[i] = wombled_layers.θ
 end
