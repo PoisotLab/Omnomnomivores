@@ -166,13 +166,42 @@ generations = 2
 # lets also create those
 
 # specify connectivity values
-c = [0, 0.5, 0.99]
+c = [0.1, 0.5, 0.99]
 # create empty landscape matrix
-landscape_connectivity = zeros(Float64, (landscape_size..., length(c)))
+# remember we want to have a 'slice' for every generation since we are gradually
+# heating the landscape
+environment_heating = zeros(Float64, (landscape_size..., generations_heating, length(c)))
 
-# populate with environmental values
-for i in eachindex(c)
-    landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size) .* species_richness
+# populate with environmental values (for the 'final state') and the inital state
+for k in eachindex(c)
+    environment_heating[:, :, end, k] = rand(DiamondSquare(c[k]), landscape_size) .* species_richness
+    environment_heating[:, :, 1, k] = environment_burnin
+end
+
+# now we can calculate the magnitude of change for each timestep to have the
+# landscape reach its 'final state'
+
+heating_step = zeros(Float64, (landscape_size..., length(c)))
+
+for k in eachindex(c)
+    heating_step[:, :, k] = (environment_heating[:, :, end, k] - environment_burnin) ./ generations_heating
+end
+
+# now we can sequentially add this value to each intermediate landscape state.
+# To make the environmental change a bit more gradual we can add a logisitc
+# 'tweak' to the environmental change.
+
+for k in eachindex(c)
+    for e in 2:(generations_heating - 1)
+        environment_heating[:, :, e, k] = (environment_heating[:, :, e - 1, k] + heating_step[:, :, k])
+    end
+end
+
+for k in eachindex(c)
+    for i in 1:generations_heating
+        environment_heating[:, :, i, k] =
+            environment_heating[:, :, i, k] * (1 / (1 + exp(-(i / generations_heating))))
+    end
 end
 
 # create the new metacommuity matrix and assign the first timestep as the
@@ -181,29 +210,41 @@ end
 metacommunity = fill(0.0, (landscape_size..., species_richness, generations_heating, length(c)));
 metacommunity[:, :, :, 1, :] .= metacommunity_burnin[:, :, :, end];
 
+# we also need to reassign the envirnomental optima of all species (recall these
+# were optimised to the uniform landscape)
+
+for k in eachindex(c)
+    set_environmental_optimum!(
+    environmental_optimum,
+    environment_heating[:, :, end, k],
+    trophic_level,
+)
+end
+
 # we can now run the simulations for the different landscapes
 
-for i in eachindex(c)
+for k in eachindex(c)
     
-    # first we need the environmental optimum to be reset
-    set_environmental_optimum!(
-        environmental_optimum,
-        landscape_connectivity[:, :, i],
-        trophic_level,
-    )
+    # we also need to reassign the envirnomental optima of all species 
+    # (recall these were optimised to the uniform (burnin) landscape)
 
     #run the simulation
     for g in 1:(generations_heating - 1)
-        _meta_comm = metacommunity[:, :, :, g:(g + 1), i]
+        _meta_comm = metacommunity[:, :, :, g:(g + 1), k]
+        _eopt = set_environmental_optimum!(
+        environmental_optimum,
+        environment_heating[:, :, g + 1, k],
+        trophic_level,
+    )
         simulate!(
             _meta_comm,
             dispersal_rate,
             dispersal_decay,
-            landscape_connectivity[:, :, i],
-            environmental_optimum,
+            environment_heating[:, :, g + 1, k],
+            _eopt,
             interaction_strength,
         )
-        metacommunity[:, :, :, g:(g + 1), i] = _meta_comm
+        metacommunity[:, :, :, g:(g + 1), k] = _meta_comm
     end   
 end
 
