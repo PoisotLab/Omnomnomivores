@@ -73,50 +73,50 @@ end
 
 # make some 'container' matrices
 
-rates = fill(zeros((2,2)), length(c))
-directions = fill(zeros((2,2)), length(c))
-candidate_boundaries = fill(zeros((2,2)), length(c))
+L = [environment_heating[:, :, end, :], richness_landscape, network_measure]
+rates = fill(0.0, (landscape_size .- 1)..., length(L), length(c))
+directions = fill(0.0, (landscape_size .- 1)..., length(L), length(c))
+candidate_boundaries = fill(0.0, (landscape_size .- 1)..., length(L), length(c))
 
-for i in eachindex(c)
-    wombled_layers = wombling(network_measure[:,:,i])
-    rates[i] = wombled_layers.m
-    directions[i] = wombled_layers.θ
+for l in eachindex(L)
+    for k in eachindex(c)
+        wombled_layers = wombling(L[l][:,:,k])
+        rates[:,:,l,k] = wombled_layers.m
+        directions[:,:,l,k] = wombled_layers.θ
+    end
 end
 
 # visuals
 
 fig = Figure()
 axs = [
-    Axis(fig[1, 1];
-        title = ""),
+    Axis(fig[1, 1]),
     Axis(fig[1, 2];
-        title = "Environment"),
-    Axis(fig[1, 3];
-        title = ""),
-    Axis(fig[2, 1];
-        title = ""),
+        title = "Rate of Change (Environment"),
+    Axis(fig[1, 3]),
+    Axis(fig[2, 1]),
     Axis(fig[2, 2];
-        title = "Rate of Change"),
-    Axis(fig[2, 3];
-        title = ""),
+        title = "Rate of Change (Richness)"),
+    Axis(fig[2, 3]),
     Axis(fig[3, 1];
-        title = ""),
+        xlabel = "low connectivity"),
     Axis(fig[3, 2];
-        title = "Direction of Change"),
+        title = "Rate of Change (Connectence)",
+        xlabel = "mid connectivity"),
     Axis(fig[3, 3];
-        title = ""),
+        xlabel = "high connectivity"),
 ]
 #colsize!(fig.layout, 1, Aspect(1, 1))
 
-heatmap!(axs[1], landscape_connectivity[:, :, 1])
-heatmap!(axs[2], landscape_connectivity[:, :, 2])
-heatmap!(axs[3], landscape_connectivity[:, :, 3])
-heatmap!(axs[4], rates[1])
-heatmap!(axs[5], rates[2])
-heatmap!(axs[6], rates[3])
-heatmap!(axs[7], directions[1], colormap=:romaO, colorrange=(0., 360.))
-heatmap!(axs[8], directions[2], colormap=:romaO, colorrange=(0., 360.))
-heatmap!(axs[9], directions[3], colormap=:romaO, colorrange=(0., 360.))
+heatmap!(axs[1], rates[:,:,1,1])
+heatmap!(axs[2], rates[:,:,1,2])
+heatmap!(axs[3], rates[:,:,1,3])
+heatmap!(axs[4], rates[:,:,2,1])
+heatmap!(axs[5], rates[:,:,2,2])
+heatmap!(axs[6], rates[:,:,2,3])
+heatmap!(axs[7], rates[:,:,3,1])
+heatmap!(axs[8], rates[:,:,3,2])
+heatmap!(axs[9], rates[:,:,3,3])
 
 current_figure()
 save("figures/heatmaps.png", fig)
