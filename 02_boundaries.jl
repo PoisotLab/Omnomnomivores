@@ -92,7 +92,7 @@ fig = Figure()
 axs = [
     Axis(fig[1, 1]),
     Axis(fig[1, 2];
-        title = "Rate of Change (Environment"),
+        title = "Rate of Change (Environment)"),
     Axis(fig[1, 3]),
     Axis(fig[2, 1]),
     Axis(fig[2, 2];
