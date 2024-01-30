@@ -19,6 +19,10 @@ like this:
 
 Code associated with the metacommunity model can be found in `lib/`.
 
-`01_code.jl` is where the process of generating the metacommunites can be found. This includes a 'proofing' (burnin, neutral landscape), baking (heating phase where landscape and environmental values are gradually changed), and cooling (where the final 'state' is kept dteady to allow community dynamic to 'settle')
+`01_code.jl` is where the process of generating the metacommunites can be found.
+This includes a 'proofing' (burnin, neutral landscape), baking (heating phase
+where landscape and environmental values are gradually changed), and cooling
+(where the final 'state' is kept steady to allow community dynamic to 'settle')
 
-`02_boundaries.jl` (which should probably be renamed) is where the wombling part of the project can be found.
+`02_boundaries.jl` (which should probably be renamed) is where the wombling part
+of the project can be found.
