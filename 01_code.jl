@@ -191,7 +191,7 @@ end
 # To make the environmental change a bit more gradual we can add a logisitc
 # 'tweak' to the environmental change.
 
-for k in eachindex(c)
+for k in eachindex(c) # this bit is reduntant but keeping it for now
     for e in 2:(generations_heating - 1)
         environment_heating[:, :, e, k] = (environment_heating[:, :, e - 1, k] + heating_step[:, :, k])
     end
@@ -275,7 +275,7 @@ for species in axes(metacommunity, 3)
     tl = trophic_level[species]
     scatter!(
         axs[tl],
-        vec(landscape_connectivity[:, :, 2]),
+        vec(environment_heating[:, :, end, 2]),
         vec(metacommunity[:, :, species, end, 1]),
     )
 end
