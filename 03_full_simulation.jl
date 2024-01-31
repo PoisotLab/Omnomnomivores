@@ -147,6 +147,12 @@ function simulate(
                 end
             end
         end
+        oops = findall(x -> x <= 1e-3, tracker[:,:,:,t])
+        if !isempty(oops)
+            for oop in oops
+                tracker[oop.I..., t+1] = 0.0
+            end
+        end
     end
     # End
     return tracker
