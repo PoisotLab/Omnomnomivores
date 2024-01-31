@@ -41,7 +41,7 @@ end
 
 comm = OmnomnomCommunity(80)
 landscape = rand(DiamondSquare(0.99), (25, 25))
-sim = OmnomnomSimulation(landscape, 10.0, 200, 150, 100)
+sim = OmnomnomSimulation(landscape, 10.0, 150, 250, 200)
 
 function setup!(
     comm::OmnomnomCommunity,
