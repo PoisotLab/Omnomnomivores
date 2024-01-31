@@ -11,6 +11,7 @@
 
 using Distributions
 using CairoMakie
+using Makie.Colors
 using NeutralLandscapes
 using Random
 using ProgressMeter
@@ -24,7 +25,7 @@ include("lib/02_model_internals.jl")
 
 # ## Initiation
 
-Random.seed!(66)
+Random.seed!(66) # the time has come
 
 # First we will specify the size of our landscape as well as the community 
 
@@ -48,7 +49,7 @@ dispersal_rate = zeros(Float64, species_richness)
 generations = 200
 
 # For the burn-in we want to keep the landscape uniform so we will populate the
-# landscape with an environemntal value of 10.0
+# landscape with an environmental value of 10.0
 
 environment_burnin = zeros(Float64, landscape_size)
 environment_burnin .= 10.0
@@ -80,9 +81,6 @@ simulate!(
 )
 
 # ### Diagnostics
-
-using CairoMakie
-using Makie.Colors
 
 # We can compile some visuals to see how the community is changing over time.
 
@@ -175,12 +173,15 @@ for i in eachindex(c)
     landscape_connectivity[:, :, i] = rand(DiamondSquare(c[i]), landscape_size)
 end
 
-
-
 environment_heating = fill(0.0, (landscape_size..., generations_heating))
 
-
-# then we can set the inital and final environemntal state
+# TODO #13 The plan here is to have a series of generations with set values
+# (proofing); then we do the increase in temperature (baking); and then some
+# number of generations with the final values (resting). This should be handled
+# by a single function, and we can simply use the baking update schedule to
+# manifest the environmental values at each timestep. The switch between
+# logisting and linear can be handled by passing a function as an argument
+# somewhere.
 
 environment_heating[:, :, 1] = environment_burnin
 environment_heating[:, :, end] = rand(DiamondSquare(), landscape_size) .* species_richness
