@@ -40,7 +40,7 @@ function OmnomnomCommunity(S::Int64)
 end
 
 comm = OmnomnomCommunity(20)
-sim = OmnomnomSimulation(rand(10, 10), 10.0, 100, 200, 100)
+sim = OmnomnomSimulation(rand(10, 10), 10.0, 10, 20, 10)
 
 function setup!(comm::OmnomnomCommunity, sim::OmnomnomSimulation; plants=0.5, herbivores=0.3, carnivores=0.2, mean_dispersal_rate=0.1,)
     set_trophic_levels!(
@@ -58,3 +58,26 @@ function setup!(comm::OmnomnomCommunity, sim::OmnomnomSimulation; plants=0.5, he
 end
 
 setup!(comm, sim)
+
+function simulate(comm::OmnomnomCommunity, sim::OmnomnomSimulation)
+    S = length(comm.trophic_level)
+    L = size(sim.landscape)
+    runtime = sim.proofing + sim.baking + sim.cooling
+    tracker = zeros(Float64, (L..., S, runtime))
+    # Main simulation loop
+    for generation in 1:runtime
+        if generation <= sim.proofing
+            # Burn-in phase
+            this_landscape = fill(sim.proofing_value, L)
+        elseif sim.proofing < generation <= (sim.proofing + sim.baking)
+            # Progressive warmup phase
+        else
+            # Cooling phase
+            this_landscape = sim.landscape
+        end
+    end
+    # End
+    return tracker
+end
+
+simulate(comm, sim)
