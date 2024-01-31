@@ -41,7 +41,7 @@ end
 
 comm = OmnomnomCommunity(80)
 landscape = rand(DiamondSquare(0.99), (25, 25))
-sim = OmnomnomSimulation(landscape, 10.0, 150, 250, 200)
+sim = OmnomnomSimulation(landscape, 10.0, 250, 300, 200)
 
 function setup!(
     comm::OmnomnomCommunity,
@@ -162,7 +162,7 @@ metacommunity = simulate(comm, sim)
 
 ## this is for some colour allocation
 
-palette = (plant=colorant"#005542", herbivore=colorant"#2B2A4C", carnivore=colorant"#B31312")
+palette = (plant=colorant"#00798c", herbivore=colorant"#edae49", carnivore=colorant"#d1495b")
 
 species_col = fill(colorant"#ffffff", length(comm.trophic_level))
 for i in axes(species_col, 1)
@@ -195,13 +195,15 @@ axs = [
 ]
 for species in axes(metacommunity, 3)
     tl = comm.trophic_level[species]
-    scatter!(
-        axs[tl],
-        vec(sim.landscape),
-        vec(metacommunity[:, :, species, end]),
-        alpha=0.6,
-        markersize=2
-    )
+    if sum(metacommunity[:, :, species, end]) > 0.0
+        scatter!(
+            axs[tl],
+            vec(sim.landscape),
+            vec(metacommunity[:, :, species, end]),
+            alpha=0.6,
+            markersize=2
+        )
+    end
 end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
@@ -217,5 +219,8 @@ lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = palette.plant, label 
 lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = palette.herbivore, label = "herbivore")
 lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = palette.carnivore, label = "carnivore")
 axislegend()
+
+xlims!(axs[4], (0, size(metacommunity, 4)))
+xlims!(axs[5], (0, size(metacommunity, 4)))
 
 current_figure()
