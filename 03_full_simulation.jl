@@ -155,14 +155,17 @@ end
 metacommunity = simulate(comm, sim)
 
 ## this is for some colour allocation
-species_col = fill("", length(comm.trophic_level))
+
+palette = (plant=colorant"#005542", herbivore=colorant"#2B2A4C", carnivore=colorant"#B31312")
+
+species_col = fill(colorant"#ffffff", length(comm.trophic_level))
 for i in axes(species_col, 1)
     if comm.trophic_level[i] == 1
-        species_col[i] = "green"
+        species_col[i] = palette.plant
     elseif comm.trophic_level[i] == 2
-        species_col[i] = "blue"
+        species_col[i] = palette.herbivore
     else
-        species_col[i] = "red"
+        species_col[i] = palette.carnivore
     end
 end
 
@@ -188,20 +191,25 @@ for species in axes(metacommunity, 3)
     tl = comm.trophic_level[species]
     scatter!(
         axs[tl],
-       # vec(comm.environmental_optimum),
+        vec(sim.landscape),
         vec(metacommunity[:, :, species, end]),
+        alpha=0.6,
+        markersize=2
     )
 end
 
 abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
+vlines!(axs[4], sim.proofing, color=:black)
+vlines!(axs[4], sim.proofing+sim.baking, color=:black)
 for species in axes(abund, 1)
-    lines!(axs[4], abund[species, 1:end]; color = species_col[species])
+    lines!(axs[4], abund[species, 1:end]; color = species_col[species], alpha=0.5)
 end
+ylims!(axs[4], (0, maximum(abund)*1.1))
 
 abund[findall(abund .> 0.0), 1] .= 1.0
-lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = "green", label = "plant")
-lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = "blue", label = "herbivore")
-lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = "red", label = "carnivore")
+lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = palette.plant, label = "plant")
+lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = palette.herbivore, label = "herbivore")
+lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = palette.carnivore, label = "carnivore")
 axislegend()
 
 current_figure()
