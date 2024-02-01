@@ -41,7 +41,7 @@ end
 
 comm = OmnomnomCommunity(80)
 landscape = rand(DiamondSquare(0.99), (25, 25))
-sim = OmnomnomSimulation(landscape, 10.0, 250, 300, 200)
+sim = OmnomnomSimulation(landscape, 10.0, 200, 1000, 200)
 
 function setup!(
     comm::OmnomnomCommunity,
@@ -75,14 +75,12 @@ end
 
 setup!(comm, sim)
 
-function RichardsCurve(f; M = 1.0, α = 1.08, c = 205.0)
-    return M / (1 + α^(c * (0.5 - f)))
-end
+EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> RichardsCurve(x),
+    schedule = (x) -> EnvironmentalChange(x; b=2.3),
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
@@ -175,7 +173,7 @@ for i in axes(species_col, 1)
     end
 end
 
-fig = Figure()
+fig = Figure(; resolution=(1000, 900))
 axs = [
     Axis(fig[1, 1];
         xlabel = "Environment value",
@@ -215,12 +213,25 @@ end
 ylims!(axs[4], (0, maximum(abund)*1.1))
 
 abund[findall(abund .> 0.0), 1] .= 1.0
-lines!(axs[5], vec(sum(abund[1:40, :]; dims = 1)); color = palette.plant, label = "plant")
-lines!(axs[5], vec(sum(abund[41:63, :]; dims = 1)); color = palette.herbivore, label = "herbivore")
-lines!(axs[5], vec(sum(abund[64:end, :]; dims = 1)); color = palette.carnivore, label = "carnivore")
-axislegend()
+
+plt_idx = findall(comm.trophic_level .== 0x01)
+hrb_idx = findall(comm.trophic_level .== 0x02)
+crn_idx = findall(comm.trophic_level .== 0x03)
+
+n_plt = vec(sum(abund[plt_idx, :]; dims = 1))
+n_hrb = n_plt .+ vec(sum(abund[hrb_idx, :]; dims = 1))
+n_crn = n_hrb .+ vec(sum(abund[crn_idx, :]; dims = 1))
+
+band!(axs[5], 1:length(n_plt), 0.0, n_crn; color = palette.carnivore, label = "carnivore")
+band!(axs[5], 1:length(n_plt), 0.0, n_hrb; color = palette.herbivore, label = "herbivore")
+band!(axs[5], 1:length(n_plt), 0.0, n_plt; color=palette.plant, label = "plant")
+axislegend(; position=:lb, nbanks=3)
+
+vlines!(axs[5], sim.proofing, color=:black)
+vlines!(axs[5], sim.proofing+sim.baking, color=:black)
 
 xlims!(axs[4], (0, size(metacommunity, 4)))
 xlims!(axs[5], (0, size(metacommunity, 4)))
+ylims!(axs[5], (0, 80))
 
 current_figure()
