@@ -39,10 +39,6 @@ function OmnomnomCommunity(S::Int64)
     )
 end
 
-comm = OmnomnomCommunity(80)
-landscape = rand(DiamondSquare(0.99), (25, 25))
-sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
-
 function setup!(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
@@ -74,14 +70,12 @@ function setup!(
     return comm, sim
 end
 
-setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
-
 EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> EnvironmentalChange(x; b=1.3),
+    schedule = (x) -> EnvironmentalChange(x; b=1.0),
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
@@ -157,7 +151,15 @@ function simulate(
     return tracker
 end
 
-metacommunity = simulate(comm, sim)
+
+# Simulation starts here
+setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
+comm = OmnomnomCommunity(80)
+landscape = rand(DiamondSquare(0.7), (25, 25))
+schedule = (x) -> EnvironmentalChange(x; b=1.1)
+sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
+
+metacommunity = simulate(comm, sim; schedule=schedule)
 
 ## this is for some colour allocation
 
