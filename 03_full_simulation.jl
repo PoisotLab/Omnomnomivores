@@ -41,7 +41,7 @@ end
 
 comm = OmnomnomCommunity(80)
 landscape = rand(DiamondSquare(0.99), (25, 25))
-sim = OmnomnomSimulation(landscape, 10.0, 200, 1000, 200)
+sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
 
 function setup!(
     comm::OmnomnomCommunity,
@@ -74,14 +74,14 @@ function setup!(
     return comm, sim
 end
 
-setup!(comm, sim)
+setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
 
 EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> EnvironmentalChange(x; b=2.3),
+    schedule = (x) -> EnvironmentalChange(x; b=1.3),
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
