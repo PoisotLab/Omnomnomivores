@@ -4,6 +4,7 @@ using Makie.Colors
 using NeutralLandscapes
 using Random
 using ProgressMeter
+using Loess
 
 #Random.seed!(66) # the time has come
 
@@ -153,13 +154,13 @@ end
 
 # Simulation starts here
 landscape_size = (15, 15)
-species_richness = 50
+species_richness = 80
 landscape = rand(DiamondSquare(0.7), landscape_size)
 comm = OmnomnomCommunity(species_richness)
 sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
 setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
 
-schedule = (x) -> EnvironmentalChange(x; b=1.5)
+schedule = (x) -> EnvironmentalChange(x; b=1.1)
 metacommunity = simulate(comm, sim; schedule=schedule)
 
 ## this is for some colour allocation
@@ -198,22 +199,42 @@ axs = [
 for species in axes(metacommunity, 3)
     tl = comm.trophic_level[species]
     if sum(metacommunity[:, :, species, end]) > 0.0
+        X = vec(sim.landscape)
+        Xr = range(extrema(X)...; step=1.0)
+        Y = vec(metacommunity[:, :, species, end])
+        Yr = predict(loess(X, Y, span=0.4), Xr)
+        lines!(
+            axs[tl], 
+            Xr,
+            Yr;
+            color = palette[Int64(tl)]
+        )
         scatter!(
             axs[tl],
-            vec(sim.landscape),
-            vec(metacommunity[:, :, species, end]),
+            X,
+            Y,
+            color = palette[Int64(tl)],
             alpha=0.6,
             markersize=2
         )
     end
 end
 
-abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))
+abund = dropdims(mapslices(sum, metacommunity; dims = (1, 2)); dims = (1, 2))./prod(landscape_size)
 vlines!(axs[4], sim.proofing, color=:black)
 vlines!(axs[4], sim.proofing+sim.baking, color=:black)
 for species in axes(abund, 1)
     lines!(axs[4], abund[species, 1:end]; color = species_col[species], alpha=0.5)
 end
+
+ylims!(axs[1], low=0.0)
+ylims!(axs[2], low=0.0)
+ylims!(axs[3], low=0.0)
+
+xlims!(axs[1], extrema(sim.landscape))
+xlims!(axs[2], extrema(sim.landscape))
+xlims!(axs[3], extrema(sim.landscape))
+
 ylims!(axs[4], (0, maximum(abund)*1.1))
 
 abund[findall(abund .> 0.0), 1] .= 1.0
@@ -236,6 +257,6 @@ vlines!(axs[5], sim.proofing+sim.baking, color=:black)
 
 xlims!(axs[4], (0, size(metacommunity, 4)))
 xlims!(axs[5], (0, size(metacommunity, 4)))
-ylims!(axs[5], (0, 80))
+ylims!(axs[5], (0, species_richness))
 
 current_figure()
