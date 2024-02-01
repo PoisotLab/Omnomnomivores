@@ -101,7 +101,7 @@ function simulate(
             this_optimum = comm.environmental_optimum
         end
         Threads.@threads for s in 1:S
-            rate_of_increase = comm.trophic_level[s] == 0x01 ? 1e-1 : -1e-2
+            rate_of_increase = comm.trophic_level[s] == 0x01 ? 1e-1 : -1e-3
             for x in axes(this_landscape, 1)
                 for y in axes(this_landscape, 2)
                     if tracker[x, y, s, t] > 0.0
