@@ -73,48 +73,58 @@ EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> EnvironmentalChange(x; b=1.0)
+    schedule = (x) -> EnvironmentalChange(x; b=1.0), h=1.0, σ=50.0
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
     runtime = sim.proofing + sim.baking + sim.cooling
     tracker = zeros(Float64, (L..., S, runtime+1))
-    tracker[:, :, :, 1] .= 0.1
-    # Original / displacement landscape
+    tracker[:, :, :, 1] .= 1e-2
+    # Pre-allocate the landscape and optimum
+    ℒ = zeros(Float64, (L..., runtime+1))
+    𝒪 = zeros(Float64, (S, runtime+1))
     L0 = fill(sim.proofing_value, L)
     O0 = fill(sim.proofing_value, S)
     ΔL = sim.landscape .- L0
     ΔO = comm.environmental_optimum .- O0
-    # Main simulation loop
-    @showprogress for t in 1:runtime
+    ℒ[:,:,1] = L0
+    𝒪[:,1] = O0
+    for t in 1:runtime
         if t <= sim.proofing
             # Burn-in phase
-            this_landscape = L0
-            this_optimum = O0
+            ℒ[:,:,t+1] = L0
+            𝒪[:,t+1] = O0
         elseif sim.proofing < t <= (sim.proofing + sim.baking)
             # Progressive warmup phase
             f = (t - sim.proofing) / sim.baking # proportion of simulation done for logistic warmup
-            this_landscape = L0 .+ ΔL .* schedule(f)
-            this_optimum = O0 .+ ΔO .* schedule(f)
+            ℒ[:,:,t+1] = L0 .+ ΔL .* schedule(f)
+            𝒪[:,t+1] = O0 .+ ΔO .* schedule(f)
         else
             # Cooling phase
-            this_landscape = sim.landscape
-            this_optimum = comm.environmental_optimum
+            ℒ[:,:,t+1] = sim.landscape
+            𝒪[:,t+1] = comm.environmental_optimum
         end
+    end
+    # Main simulation loop
+    @showprogress for t in 1:runtime
         Threads.@threads for s in 1:S
             rate_of_increase = comm.trophic_level[s] == 0x01 ? 1e-1 : -1e-3
-            for x in axes(this_landscape, 1)
-                for y in axes(this_landscape, 2)
+            # Environmental effect
+            Δ = (ℒ[:,:,t] .- 𝒪[s,t])./σ
+            A = exp.(-0.5.*Δ.^2.0) .* 1/(σ*sqrt(2π)) .* h
+            A .-= maximum(A)
+            for x in axes(ℒ[:,:,t], 1)
+                for y in axes(ℒ[:,:,t], 2)
                     if tracker[x, y, s, t] > 0.0
                         patch_location = (x, y)
-                        environment = _environmental_effect(
+                        #=environment = _environmental_effect(
                             tracker,
                             s,
                             patch_location,
                             t,
-                            this_landscape,
-                            this_optimum,
-                        )
+                            ℒ[:,:,t],
+                            𝒪[:,t],
+                        )=#
                         interaction = _interaction_effect(
                             tracker,
                             s,
@@ -122,7 +132,7 @@ function simulate(
                             t,
                             comm.interaction_strength,
                         )
-                        growth_rate = exp(rate_of_increase + environment + interaction)
+                        growth_rate = exp(rate_of_increase + A[x,y] + interaction)
                         tracker[x, y, s, t + 1] +=
                             tracker[x, y, s, t] * growth_rate
 
@@ -149,19 +159,19 @@ function simulate(
         end
     end
     # End
-    return tracker
+    return tracker, ℒ, 𝒪
 end
 
 # Simulation starts here
-landscape_size = (15, 15)
+landscape_size = (10, 10)
 species_richness = 80
-landscape = rand(DiamondSquare(0.7), landscape_size)
+landscape = rand(DiamondSquare(0.99), landscape_size)
 comm = OmnomnomCommunity(species_richness)
-sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
-setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
+sim = OmnomnomSimulation(landscape, 0.5species_richness, 2000, 5000, 2000)
+setup!(comm, sim; plants=3, herbivores=2, carnivores=1)
 
-schedule = (x) -> EnvironmentalChange(x; b=1.1)
-metacommunity = simulate(comm, sim; schedule=schedule)
+schedule = (x) -> EnvironmentalChange(x; b=1.2)
+metacommunity, environment, optima = simulate(comm, sim; schedule=schedule, h=300.0, σ=50.0)
 
 ## this is for some colour allocation
 
@@ -260,3 +270,10 @@ xlims!(axs[5], (0, size(metacommunity, 4)))
 ylims!(axs[5], (0, species_richness))
 
 current_figure()
+
+#=
+vec(mapslices(maximum, environment, dims=(1,2))) |> scatter
+vec(mapslices(minimum, environment, dims=(1,2))) |> scatter!
+vec(mapslices(median, environment, dims=(1,2))) |> scatter!
+current_figure()
+=#

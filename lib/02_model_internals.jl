@@ -84,6 +84,7 @@ function simulate!(
     @showprogress for generation in 1:(generations - 1)
         for species in axes(metacommunity, 3)
             rate_of_increase = trophic_level[species] == 1 ? 1e-1 : -1e-2
+            # Simulation
             for x in axes(metacommunity, 1)
                 for y in axes(metacommunity, 2)
                     if metacommunity[x, y, species, generation] > 0.0
