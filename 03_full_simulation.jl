@@ -10,9 +10,6 @@ using ProgressMeter
 include("lib/01_species_creation.jl")
 include("lib/02_model_internals.jl")
 
-landscape_size = (20, 20)
-species_richness = 80
-
 mutable struct OmnomnomSimulation
     landscape::Matrix{Float64}
     proofing_value::Float64
@@ -75,15 +72,18 @@ EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> EnvironmentalChange(x; b=1.0),
+    schedule = (x) -> EnvironmentalChange(x; b=1.0)
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
     runtime = sim.proofing + sim.baking + sim.cooling
     tracker = zeros(Float64, (L..., S, runtime+1))
     tracker[:, :, :, 1] .= 0.1
+    # Original / displacement landscape
     L0 = fill(sim.proofing_value, L)
     O0 = fill(sim.proofing_value, S)
+    ΔL = sim.landscape .- L0
+    ΔO = comm.environmental_optimum .- O0
     # Main simulation loop
     @showprogress for t in 1:runtime
         if t <= sim.proofing
@@ -93,8 +93,8 @@ function simulate(
         elseif sim.proofing < t <= (sim.proofing + sim.baking)
             # Progressive warmup phase
             f = (t - sim.proofing) / sim.baking # proportion of simulation done for logistic warmup
-            this_landscape = L0 .+ (sim.landscape .- L0) .* schedule(f)
-            this_optimum = O0 .+ (comm.environmental_optimum .- O0) .* schedule(f)
+            this_landscape = L0 .+ ΔL .* schedule(f)
+            this_optimum = O0 .+ ΔO .* schedule(f)
         else
             # Cooling phase
             this_landscape = sim.landscape
@@ -151,14 +151,15 @@ function simulate(
     return tracker
 end
 
-
 # Simulation starts here
-setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
-comm = OmnomnomCommunity(80)
-landscape = rand(DiamondSquare(0.7), (25, 25))
-schedule = (x) -> EnvironmentalChange(x; b=1.1)
+landscape_size = (15, 15)
+species_richness = 50
+landscape = rand(DiamondSquare(0.7), landscape_size)
+comm = OmnomnomCommunity(species_richness)
 sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
+setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
 
+schedule = (x) -> EnvironmentalChange(x; b=1.1)
 metacommunity = simulate(comm, sim; schedule=schedule)
 
 ## this is for some colour allocation
