@@ -51,6 +51,7 @@ function setup!(
     carnivores = 0.2,
     mean_dispersal_rate = 0.1,
 )
+    plants, herbivores, carnivores = (plants, herbivores, carnivores) ./ (plants + herbivores + carnivores)
     sim.landscape .*= length(comm.trophic_level)
     set_trophic_levels!(
         comm.trophic_level;
