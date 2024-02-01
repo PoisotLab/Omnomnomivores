@@ -159,7 +159,7 @@ comm = OmnomnomCommunity(species_richness)
 sim = OmnomnomSimulation(landscape, 10.0, 500, 2000, 100)
 setup!(comm, sim; plants=0.4, herbivores=0.4, carnivores=0.2)
 
-schedule = (x) -> EnvironmentalChange(x; b=1.1)
+schedule = (x) -> EnvironmentalChange(x; b=1.5)
 metacommunity = simulate(comm, sim; schedule=schedule)
 
 ## this is for some colour allocation
