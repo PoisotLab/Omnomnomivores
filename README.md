@@ -1,5 +1,7 @@
 # Omnomnomivores
 
+<p style="text-align: center;">"Never become desperate enough to trust the untrustworthy." ―Moral</p>
+
 The code associated with this repository is essentially taking the metacommunity
 model from [Thompson and Gonzalez
 2017](https://doi.org/10.1038/s41559-023-02163-0) and adding some modification
