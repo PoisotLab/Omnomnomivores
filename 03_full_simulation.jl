@@ -110,7 +110,7 @@ function simulate(
         Threads.@threads for s in 1:S
             rate_of_increase = comm.trophic_level[s] == 0x01 ? 1e-1 : -1e-3
             # Environmental effect
-            Δ = (ℒ[:,:,t] .- 𝒪[s,t])./σ
+            Δ = (ℒ[:,:,t] .- 𝒪[s,t])./2σ
             A = exp.(-0.5.*Δ.^2.0) .* 1/(σ*sqrt(2π)) .* h
             A .-= maximum(A)
             for x in axes(ℒ[:,:,t], 1)
@@ -163,14 +163,14 @@ function simulate(
 end
 
 # Simulation starts here
-landscape_size = (10, 10)
+landscape_size = (1, 200)
 species_richness = 80
 landscape = rand(DiamondSquare(0.99), landscape_size)
 comm = OmnomnomCommunity(species_richness)
-sim = OmnomnomSimulation(landscape, 0.5species_richness, 2000, 5000, 2000)
-setup!(comm, sim; plants=3, herbivores=2, carnivores=1)
+sim = OmnomnomSimulation(landscape, 0.5species_richness, 2000, 3000, 2000)
+setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
 
-schedule = (x) -> EnvironmentalChange(x; b=1.2)
+schedule = (x) -> EnvironmentalChange(x; b=1)
 metacommunity, environment, optima = simulate(comm, sim; schedule=schedule, h=300.0, σ=50.0)
 
 ## this is for some colour allocation
