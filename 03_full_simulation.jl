@@ -46,7 +46,7 @@ function setup!(
     mean_dispersal_rate = 0.1,
 )
     plants, herbivores, carnivores = (plants, herbivores, carnivores) ./ (plants + herbivores + carnivores)
-    sim.landscape .*= length(comm.trophic_level)
+    sim.landscape .*= 0.5length(comm.trophic_level) # 'environmental amplitude'
     set_trophic_levels!(
         comm.trophic_level;
         plants = plants,
@@ -73,7 +73,7 @@ EnvironmentalChange(x; b=1.0) = x^b / (x^b + (1-x)^b)
 function simulate(
     comm::OmnomnomCommunity,
     sim::OmnomnomSimulation;
-    schedule = (x) -> EnvironmentalChange(x; b=1.0), h=1.0, σ=50.0
+    schedule = (x) -> EnvironmentalChange(x; b=1.0), h=300.0, σ=50.0
 )
     S = length(comm.trophic_level)
     L = size(sim.landscape)
@@ -109,10 +109,10 @@ function simulate(
     @showprogress for t in 1:runtime
         Threads.@threads for s in 1:S
             rate_of_increase = comm.trophic_level[s] == 0x01 ? 1e-1 : -1e-3
-            # Environmental effect
-            Δ = (ℒ[:,:,t] .- 𝒪[s,t])./2σ
-            A = exp.(-0.5.*Δ.^2.0) .* 1/(σ*sqrt(2π)) .* h
-            A .-= maximum(A)
+            # Environmental effect - the maximum value is the ACTUAL max, not the OBSERVED max
+            Δ = ((ℒ[:,:,t] .- 𝒪[s,t]).^2.0) ./ (2*σ*σ)
+            A = (1/(σ*sqrt(2π)) * h) .* (exp.(-Δ) .- 1.0)
+            
             for x in axes(ℒ[:,:,t], 1)
                 for y in axes(ℒ[:,:,t], 2)
                     if tracker[x, y, s, t] > 0.0
@@ -163,11 +163,11 @@ function simulate(
 end
 
 # Simulation starts here
-landscape_size = (1, 200)
+landscape_size = (20, 10)
 species_richness = 80
 landscape = rand(DiamondSquare(0.99), landscape_size)
 comm = OmnomnomCommunity(species_richness)
-sim = OmnomnomSimulation(landscape, 0.5species_richness, 2000, 3000, 2000)
+sim = OmnomnomSimulation(landscape, 0.5species_richness, 500, 2000, 1000)
 setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
 
 schedule = (x) -> EnvironmentalChange(x; b=1)
