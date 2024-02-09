@@ -2,7 +2,7 @@
 
 The code associated with this repository is essentially taking the metacommunity
 model from [Thompson and Gonzalez
-2017](https://doi.org/10.1038/s41559-023-02163-0) and adding some modification
+2017](https://doi.org/10.1038/s41559-017-0162) and adding some modification
 to the workflow to suit the specific research goals/questions. A high-level
 visual summary of the model itself can be found below:
 
