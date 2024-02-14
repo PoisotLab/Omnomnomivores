@@ -14,10 +14,10 @@ include("lib/03_simulation_setup.jl")
 
 
 landscape_size = (20, 20)
-species_richness = 80
+species_richness = 60
 landscape = rand(DiamondSquare(0.99), landscape_size)
 comm = OmnomnomCommunity(species_richness)
-sim = OmnomnomSimulation(landscape, 0.5species_richness, 1000, 1000, 1000)
+sim = OmnomnomSimulation(landscape, 20, 500, 1000, 500)
 setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
 
 schedule = (x) -> EnvironmentalChange(x; b=1)
@@ -120,6 +120,7 @@ xlims!(axs[5], (0, size(metacommunity, 4)))
 ylims!(axs[5], (0, species_richness))
 
 current_figure()
+save("figures/diagnostics.png", fig)
 
 #=
 vec(mapslices(maximum, environment, dims=(1,2))) |> scatter
