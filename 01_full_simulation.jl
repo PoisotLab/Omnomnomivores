@@ -14,7 +14,7 @@ include("lib/03_simulation_setup.jl")
 
 
 landscape_size = (20, 20)
-species_richness = 60
+species_richness = 70
 landscape = rand(DiamondSquare(0.99), landscape_size)
 comm = OmnomnomCommunity(species_richness)
 sim = OmnomnomSimulation(landscape, 20, 500, 1000, 500)
