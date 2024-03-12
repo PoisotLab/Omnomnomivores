@@ -31,9 +31,10 @@ function setup!(
     herbivores = 0.3,
     carnivores = 0.2,
     mean_dispersal_rate = 0.1,
+    env_range = 0.5
 )
     plants, herbivores, carnivores = (plants, herbivores, carnivores) ./ (plants + herbivores + carnivores)
-    sim.landscape .*= 0.5length(comm.trophic_level) # 'environmental amplitude'
+    sim.landscape .*= 0.5*env_range # 'environmental amplitude'
     set_trophic_levels!(
         comm.trophic_level;
         plants = plants,

@@ -13,15 +13,27 @@ include("lib/02_model_internals.jl")
 include("lib/03_simulation_setup.jl")
 
 
-landscape_size = (20, 20)
-species_richness = 120
+landscape_size = (26, 26)
+species_richness = 80
 landscape = rand(DiamondSquare(0.99), landscape_size)
+env_range = collect(0:10:0.5*species_richness)
+metacommunity = []
+environment = []
 comm = OmnomnomCommunity(species_richness)
 sim = OmnomnomSimulation(landscape, 20, 500, 1000, 500)
-setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
 
-schedule = (x) -> EnvironmentalChange(x; b=1)
-metacommunity, environment, optima = simulate(comm, sim; schedule=schedule, h=50.0, σ=50.0)
+for i in eachindex(env_range)
+
+    setup!(comm, sim; plants=5, herbivores=3, carnivores=2, env_range=env_range[i])
+
+    schedule = (x) -> EnvironmentalChange(x; b=1)
+    metacomm, env, optima = simulate(comm, sim; schedule=schedule, h=300.0, σ=50.0) 
+    
+    push!(metacommunity, metacomm)
+    push!(environment, env)
+end
+
+
 
 ## this is for some colour allocation
 
