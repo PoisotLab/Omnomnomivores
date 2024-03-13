@@ -21,43 +21,31 @@ interaction_networks = [deepcopy(N) for x in 1:first(landscape_size), y in 1:las
 # make interaction netwrok based on interaction strength as well as abundance
 # (this is binary)
 
-for i in axes(comm.interaction_strength, 1)
-    for j in axes(comm.interaction_strength, 2)
-        if !iszero(comm.interaction_strength[i,j])
-            for x in axes(interaction_networks, 1)
-                for y in axes(interaction_networks, 2)
-                    if (metacommunity[x, y, i, end] > 0.0) && (metacommunity[x, y, j, end] > 0.0)
-                        interaction_networks[x, y][i, j] = 1
-                    end
+for x in axes(interaction_networks, 1)
+    for y in axes(interaction_networks, 2)
+        for i in axes(comm.interaction_strength, 1)
+            for j in axes(comm.interaction_strength, 2)
+                if !iszero(comm.interaction_strength[i,j]) && (metacommunity[1][x, y, i, end] > 0.0) && (metacommunity[1][x, y, j, end] > 0.0)
+                    interaction_networks[x, y][j, i] = 1
                 end
             end
         end
     end
 end
 
+
 # lets calculate the connectance for each landscape patch
 
 # new matrix to store netwrok measure
 
 network_measure = fill(0.0, (landscape_size))
+sp_richness = fill(0, (landscape_size))
 
 for x in axes(interaction_networks, 1)
     for y in axes(interaction_networks, 2)
         N = UnipartiteNetwork(interaction_networks[x,y])
         network_measure[x,y] = connectance(simplify(N))
-    end
-end
-
-# species richness (we should probably do this using the simplified networks)
-
-metacommunity2 = metacommunity[:,:,:,end]
-metacommunity2[findall(metacommunity[:,:,:,end] .> 0.0), 1] .= 1
-
-sp_richness = fill(0, (landscape_size))
-
-for x in axes(interaction_networks, 1)
-    for y in axes(interaction_networks, 2)
-        sp_richness[x,y] = sum(vec(metacommunity2[x,y,:]))
+        sp_richness[x,y] = richness(simplify(N))
     end
 end
 
