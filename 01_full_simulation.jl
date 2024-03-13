@@ -20,23 +20,14 @@ connectivity = collect(0.0:0.11:0.99)
 metacommunity = []
 environment = []
 
-for i in eachindex(h_val)
-    for j in eachindex(connectivity)
-       
-        landscape = rand(DiamondSquare(connectivity[j]), landscape_size)
-        comm = OmnomnomCommunity(species_richness)
-        sim = OmnomnomSimulation(landscape, 20, 500, 1000, 500)
+landscape = rand(DiamondSquare(0.99), landscape_size)
+comm = OmnomnomCommunity(species_richness)
+sim = OmnomnomSimulation(landscape, 0.5species_richness, 500, 1000, 500)
 
-        setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
+setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
 
-        schedule = (x) -> EnvironmentalChange(x; b=1)
-        metacom, environ, optima = simulate(comm, sim; schedule=schedule, h=h_val[i], σ=50.0)
-    
-    push!(metacommunity, metacom)
-    push!(environment, environ)
-    end
-end
-
+schedule = (x) -> EnvironmentalChange(x; b=1)
+metacommunity, environment, optima = simulate(comm, sim; schedule=schedule, h=50.0, σ=50.0)
 
 
 ## this is for some colour allocation
