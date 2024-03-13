@@ -16,17 +16,17 @@ using SpeciesDistributionToolkit
 # have matrix that is the netwrok matrix for each cell, so 80X80 for the 20x20
 
 N = zeros(Bool, (species_richness, species_richness))
-interaction_networks = [copy(N) for x in 1:first(landscape_size), y in 1:last(landscape_size)]
+interaction_networks = [deepcopy(N) for x in 1:first(landscape_size), y in 1:last(landscape_size)]
 
 # make interaction netwrok based on interaction strength as well as abundance
 # (this is binary)
 
-for i in axes(interaction_strength, 1)
-    for j in axes(interaction_strength, 2)
-        if !iszero(interaction_strength[i,j])
+for i in axes(comm.interaction_strength, 1)
+    for j in axes(comm.interaction_strength, 2)
+        if !iszero(comm.interaction_strength[i,j])
             for x in axes(interaction_networks, 1)
                 for y in axes(interaction_networks, 2)
-                    if (metacommunity[x, y, i, end] > 0) && (metacommunity[x, y, j, end] > 0)
+                    if (metacommunity[x, y, i, end] > 0.0) && (metacommunity[x, y, j, end] > 0.0)
                         interaction_networks[x, y][i, j] = 1
                     end
                 end
@@ -48,16 +48,16 @@ for x in axes(interaction_networks, 1)
     end
 end
 
-# species richness
+# species richness (we should probably do this using the simplified networks)
 
 metacommunity2 = metacommunity[:,:,:,end]
 metacommunity2[findall(metacommunity[:,:,:,end] .> 0.0), 1] .= 1
 
-species_richness = fill(0, (landscape_size))
+sp_richness = fill(0, (landscape_size))
 
 for x in axes(interaction_networks, 1)
     for y in axes(interaction_networks, 2)
-        species_richness[x,y] = sum(vec(metacommunity2[x,y,:]))
+        sp_richness[x,y] = sum(vec(metacommunity2[x,y,:]))
     end
 end
 
@@ -65,28 +65,14 @@ end
 
 # lets concatinate the three variable to make looping through them easier
 
-L = [environment_heating[:, :, end], species_richness, network_measure]
+L = [landscape, sp_richness, network_measure]
 rates = fill(zeros(Float16, (2,2)), length(L))
 directions = fill(zeros(Float16, (2,2)), length(L))
-candidate_boundaries = fill(zeros(Float16, (2,2)), length(L))
 
 for i in 1:3
     wombled_layers = wombling(L[i])
     rates[i] = wombled_layers.m
-    directions[i] = wombled_layers.θ
-
-    # calculate boundaries
-    rate, direction = SimpleSDMPredictor(wombled_layers)
-    b = similar(rate)
-    b.grid[boundaries(wombled_layers, 0.1; ignorezero = true)] .= 1.0
-    candidate_boundaries[i] = b.grid
-
-    # only keep upper (0.95) and lower (0.05) quantiles
-    quants = quantile(rates[i], [0.05, 0.90])
-    # we will replace non quantile values with zero
-    #rates[i][findall(t ->  quants[1] < t < quants[2], rates[i])] .= 0
-    rates[i][findall(t ->  t < quants[2], rates[i])] .= 0
-   
+    directions[i] = wombled_layers.θ  
 end
 
 # visuals
@@ -114,12 +100,12 @@ axs = [
 ]
 #colsize!(fig.layout, 1, Aspect(1, 1))
 
-heatmap!(axs[1], environment_heating[:, :, end])
-heatmap!(axs[2], species_richness)
+heatmap!(axs[1], landscape)
+heatmap!(axs[2], sp_richness)
 heatmap!(axs[3], network_measure)
-heatmap!(axs[4], rates[1], colormap=[:transparent, :green], colorrange=(minimum(rates[1]), maximum(rates[1])))
-heatmap!(axs[5], rates[2], colormap=[:transparent, :green], colorrange=(minimum(rates[2]), maximum(rates[2])))
-heatmap!(axs[6], rates[3], colormap=[:transparent, :green], colorrange=(minimum(rates[3]), maximum(rates[3])))
+heatmap!(axs[4], rates[1])
+heatmap!(axs[5], rates[2])
+heatmap!(axs[6], rates[3])
 heatmap!(axs[7], directions[1], colormap=:romaO, colorrange=(0., 360.))
 heatmap!(axs[8], directions[2], colormap=:romaO, colorrange=(0., 360.))
 heatmap!(axs[9], directions[3], colormap=:romaO, colorrange=(0., 360.))
