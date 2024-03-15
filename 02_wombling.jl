@@ -25,7 +25,7 @@ for x in axes(interaction_networks, 1)
     for y in axes(interaction_networks, 2)
         for i in axes(comm.interaction_strength, 1)
             for j in axes(comm.interaction_strength, 2)
-                if !iszero(comm.interaction_strength[i,j]) && (metacommunity[1][x, y, i, end] > 0.0) && (metacommunity[1][x, y, j, end] > 0.0)
+                if !iszero(comm.interaction_strength[i,j]) && (metacommunity[x, y, i, end] > 0.0) && (metacommunity[x, y, j, end] > 0.0)
                     interaction_networks[x, y][j, i] = 1
                 end
             end

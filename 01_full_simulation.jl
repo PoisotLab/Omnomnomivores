@@ -15,26 +15,15 @@ include("lib/03_simulation_setup.jl")
 
 landscape_size = (26, 26)
 species_richness = 100
-#connectivity = collect(0.1:0.2:0.99)
-connectivity = [0.1, 0.5, 0.99]
-metacommunity = []
-environment = []
+landscape = rand(DiamondSquare(0.99), landscape_size)
 
-for i in eachindex(connectivity)
-
-    landscape = rand(DiamondSquare(connectivity[i]), landscape_size)
-    comm = OmnomnomCommunity(species_richness)
-    sim = OmnomnomSimulation(landscape, 0.5species_richness, 500, 1000, 500)
+comm = OmnomnomCommunity(species_richness)
+sim = OmnomnomSimulation(landscape, 0.5species_richness, 500, 1000, 500)
     
-    setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
+setup!(comm, sim; plants=5, herbivores=3, carnivores=2)
     
-    schedule = (x) -> EnvironmentalChange(x; b=1)
-    metacomm, env, optima = simulate(comm, sim; schedule=schedule, h=30.0, σ=50.0)
-    
-    push!(metacommunity, metacomm)
-    push!(environment, env)
-
-end
+schedule = (x) -> EnvironmentalChange(x; b=1)
+metacommunity, environment, optima = simulate(comm, sim; schedule=schedule, h=30.0, σ=50.0)
 
 
 
